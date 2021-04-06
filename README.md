@@ -1,7 +1,10 @@
-# MSiA423 Template Repository
+# Project Name
 
 <!-- toc -->
-
+- [Project Charter](#project-charter)
+  * [1. Vision](#1-vision)
+  * [2. Mission](#2-mission)
+  * [3. Success Criteria](#3-success-criteria)
 - [Directory structure](#directory-structure)
 - [Running the app](#running-the-app)
   * [1. Initialize the database](#1-initialize-the-database)
@@ -18,6 +21,7 @@
   * [Workaround for potential Docker problem for Windows.](#workaround-for-potential-docker-problem-for-windows)
 
 <!-- tocstop -->
+## Project Charter
 
 ## Directory structure 
 
