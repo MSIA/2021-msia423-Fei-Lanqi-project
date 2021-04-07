@@ -3,6 +3,7 @@ Project creator and Developer: Lanqi Fei
 
 (QA contributions: Zixiao Huang)
 
+## Table of Contents
 <!-- toc -->
 - [Project Charter](#project-charter)
   * [1. Vision](#1-vision)
