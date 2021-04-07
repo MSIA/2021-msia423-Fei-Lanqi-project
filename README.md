@@ -25,21 +25,21 @@ Project creator and Developer: Lanqi Fei
 
 <!-- tocstop -->
 ## Project Charter
-### 1. Vision
 
-There are many recommender systems built for movies, such as [MovieLens](https://movielens.org/) and recommenders developed by OTT providers like Netflix. However, these recommender systems, especially those for personal use like MovieLens does not have a lot of Chinese movies available in their database, or movies from other Asian countries. This has made it hard for Chinese movie lovers to find similar movies they might like after watching some very interesting movie. Although they might try browsing through recommended movies through some Chinese OTT platforms like IQIYI, those are designed for specific platforms and will only recommend movies that are availale through that platform. Therefore, a movie finder designed specifically for Chinese people would be very helpful.
+### 1. Vision
+There are many recommender systems (RS) built for movies, such as [MovieLens](https://movielens.org/) and RS developed by OTT providers like Netflix. However, these recommender systems, especially those for personal use like MovieLens does not have a lot of Chinese movies available in their database, or movies from other Asian countries. This has made it hard for Chinese movie lovers to find similar movies they might like after watching some very interesting movie. Although they might try browsing through recommended movies on some Chinese OTT platforms like IQIYI, those are designed for specific platforms and will only recommend movies that are availale on that platform. Therefore, a movie finder designed specifically for Chinese people would be very helpful.
 
 ### 2. Mission
-In this project, a movie finder is built to facilitate mainly Chinese people for finding similar movies that might interest them, using the most widely used movie platform in China - [Douban](http://douban.com/). The [original dataset](https://sites.google.com/site/erhengzhong/datasets) were collected from Erheng Zhong's paper on KDD'12, TKDD'14, SDM'12 and its preprocessed version, which is used for this web application, can be found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb).
+In this project, a movie finder is built to facilitate mainly Chinese people for finding similar movies that might interest them, using the most widely used movie platform in China - [Douban](http://douban.com/). The [original dataset](https://sites.google.com/site/erhengzhong/datasets) were collected for Erheng Zhong's research paper on KDD'12, TKDD'14, SDM'12 and its preprocessed version, which is used for this web application, can be found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb).
+
+A user can type in the movie they like and the app will give the users a set of similar movies, ranked by movie similarity, rating or popularity, based on the user's choice. 
 
 ### 3. Success Criteria
-How will your business stakeholders (Fausto and Chloe) know the project was successful. What metric will you use to evaluate the performance of your model? What is the minimum value of that metric required for success?
-
-You should include two success criteria:
-
-The machine learning performance metric (e.g. accuracy, MSE, AUC, etc) that you will assess the model’s performance prior to deployment - what criteria is there for this metric that should be met before it can go live? (this can be negotiated later on).
-The metric that would actually measure the business outcome desired. This could be something like revenue, measures of user engagement, etc. Your app is sadly unlikely to be live long enough to measure this metric (though we would love if you kept it running forever!), but if it were, this what the true model performance and success would be based on
-
+1. Model Performance Metric
+   * Average Silhouette Score - Desired score prior to model deployment: > 0.3 (the underlying algorithm is clustering, and it aims at finding clusters of similar movies)
+3. Business Metric
+   * Number of daily visitors
+   * % visitors using the App 
 ## Directory structure 
 
 ```
