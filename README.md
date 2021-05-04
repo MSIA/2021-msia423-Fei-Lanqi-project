@@ -33,14 +33,14 @@ There are many recommender systems (RS) built for movies, such as [MovieLens](ht
 ### 2. Mission
 In this project, a movie finder is built to facilitate mainly Chinese people for finding similar movies that might interest them, using the most widely used movie platform in China - [Douban](http://douban.com/). The [original dataset](https://sites.google.com/site/erhengzhong/datasets) were collected for Erheng Zhong's research paper on KDD'12, TKDD'14, SDM'12 and its preprocessed version, which is used for this web application, can be found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb).
 
-A user can type in the movie they like and the app will give the users a set of similar movies, ranked by movie similarity, rating or popularity, based on the user's choice. 
+A user can type in the movie they like and the app will give the users a set of similar movies, ranked by movie rating or popularity, based on the user's choice. 
 
 ### 3. Success Criteria
 1. Model Performance Metric
    * Average Silhouette Score - Desired score prior to model deployment: > 0.3 (the underlying algorithm is clustering, and it aims at finding clusters of similar movies)
 3. Business Metric
-   * Number of daily visitors
-   * % visitors using the App 
+To measure the business success of this app, standard A/B testing will be used, comparing the average ratings for movies made by users who did not consult the app and users who consulted this app for similar movies. A higher average rating for the second group of users would indicate a success in this app.
+ 
 ## Directory structure 
 
 ```
