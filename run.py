@@ -2,9 +2,9 @@ import argparse
 
 import logging.config
 logging.config.fileConfig('config/logging/local.conf')
-logger = logging.getLogger('penny-lane-pipeline')
+logger = logging.getLogger('douban-rs-pipeline')
 
-from src.add_songs import TrackManager, create_db
+from src.add_movies import MovieManager, create_db
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 if __name__ == '__main__':
@@ -20,10 +20,11 @@ if __name__ == '__main__':
 
     # Sub-parser for ingesting new data
     sb_ingest = subparsers.add_parser("ingest", description="Add data to database")
-    sb_ingest.add_argument("--artist", default="Emancipator", help="Artist of song to be added")
-    sb_ingest.add_argument("--title", default="Minor Cause", help="Title of song to be added")
-    sb_ingest.add_argument("--album", default="Dusk to Dawn", help="Album of song being added")
-    sb_ingest.add_argument("--engine_string", default='sqlite:///data/tracks.db',
+    sb_ingest.add_argument("--title", default="芳华", help="Title of movie to be added")
+    sb_ingest.add_argument("--rating", default=4.5, help="Average rating of movie to be added")
+    sb_ingest.add_argument("--popularity", default=1000, help="Popularity of movie to be added")
+    sb_ingest.add_argument("--cluster", default=1, help="Cluster of movie to be added")
+    sb_ingest.add_argument("--engine_string", default='sqlite:///data/movies.db',
                            help="SQLAlchemy connection URI for database")
 
     args = parser.parse_args()
@@ -32,10 +33,7 @@ if __name__ == '__main__':
         create_db(args.engine_string)
     elif sp_used == 'ingest':
         tm = TrackManager(engine_string=args.engine_string)
-        tm.add_track(args.title, args.artist, args.album)
+        tm.add_movie(args.title, args.rating, args.popularity, args.cluster)
         tm.close()
     else:
         parser.print_help()
-
-
-
