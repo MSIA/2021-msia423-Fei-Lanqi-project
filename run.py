@@ -4,7 +4,7 @@ import logging.config
 logging.config.fileConfig('config/logging/local.conf')
 logger = logging.getLogger('douban-rs-pipeline')
 
-from src.add_movies import MovieManager, create_db
+from src.add_movie import MovieManager, create_db
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 if __name__ == '__main__':
