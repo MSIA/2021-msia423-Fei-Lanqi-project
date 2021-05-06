@@ -134,7 +134,7 @@ Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
 To only access and look into the database:
 `docker run -it --rm mysql:5.7.33 mysql -h${MYSQL_HOST} -u${MYSQL_USER} -p${MYSQL_PASSWORD}`, then you can run `SHOW DATABASES;` -> `USE msia423;` -> `SHOW TABLES;`->`DESCRIBE movies;` to check the schema.
 
-#### Adding songs 
+#### Adding movies 
 To add movies to the database:
 
 `python run.py ingest --engine_string=<engine_string> --title=<TITLE> --rating=<RATING> --popularity=<POPULARITY> --cluster=<CLUSTER>`
