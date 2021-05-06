@@ -9,7 +9,7 @@ from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 if __name__ == '__main__':
 
-    # Add parsers for both creating a database and adding songs to it
+    # Add parsers for both creating a database and adding movies to it
     parser = argparse.ArgumentParser(description="Create and/or add data to database")
     subparsers = parser.add_subparsers(dest='subparser_name')
 

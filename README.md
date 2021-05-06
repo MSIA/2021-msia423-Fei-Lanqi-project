@@ -87,20 +87,59 @@ To measure the business success of this app, standard A/B testing will be used, 
 
 ## Running the app
 ### 1. Initialize the database 
+#### Acquire the datasets
+The original dataset is found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb). Click the first link directs to the [download site](https://pan.baidu.com/s/1DkN1LmdSMzm_jCBKhbPbig) at Baidu Netdisk. Then it could be downloaded by clicking the download button (the second button near on the top right corner, which is next to the blue button). However, it requires one to have Baidu Netdisk installed and a Baidu account. To facilitate downloading, the raw datasets have already been included in this repo under `data/sample/`. They could also be downloaded via the `src/data_acquisition.py` described below.
+
+To download the raw datasets and write them into the S3 bucket, run:
+
+`python src/data_aquisition.py --local_path=<local_path> --s3_path=<s3_path> download_upload`
+
+By default, `python src/data_aquisition.py download_upload` downloads the three raw datasets from `data/sample/` in this repo to local path `data/sample/` and uploads them to `s3://2021-msia423-fei-lanqi/raw/`. Note that the S3 raw folder already contains the raw datasets. To test the script, one might want to write to a different S3 bucket or a different folder in the default bucket. One could also use the subparser `download` or `upload` to only download the datasets from source or only upload the datasets to S3.
+
+To write the datasets into S3 bucket in Docker:
+
+Note that since we are building the image from inside the repo, where the raw datasets already exist, there is no need to download the datasets again.
+
+- build a docker image:
+
+Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
+
+- run the script:
+
+`docker run -it --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY msia423 src/data_acquisition.py --s3_path=<s3_path> upload`
+
+- check the data is uploaded to s3:
+
+`aws s3 ls <s3_path>`
 
 #### Create the database 
-To create the database in the location configured in `config.py` run: 
+To create the database in the location configured in `config.py`, run: 
 
 `python run.py create_db --engine_string=<engine_string>`
 
-By default, `python run.py create_db` creates a database at `sqlite:///data/tracks.db`.
+By default, `python run.py create_db` creates a database at `sqlite:///data/movies.db` if MYSQL_HOST is not given.
+
+To create the database using Docker, run:
+- build a docker image:
+
+Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
+
+- create the database in the RDS for this project:
+
+`docker run -it --env MYSQL_HOST --env MYSQL_PORT --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_DATABASE msia423 run.py create_db`
+, the following enviroment variables might be needed:
+`export MYSQL_PASSWORD=msia423-fei-lanqi.cgmsms1nwcii.us-east-1.rds.amazonaws.com`
+`export MYSQL_DATABASE=msia423_db`
+
+To only access and look into the database:
+`docker run -it --rm mysql:5.7.33 mysql -h${MYSQL_HOST} -u${MYSQL_USER} -p${MYSQL_PASSWORD}`, then you can run `SHOW DATABASES;` -> `USE msia423;` -> `SHOW TABLES;`->`DESCRIBE movies;` to check the schema.
 
 #### Adding songs 
-To add songs to the database:
+To add movies to the database:
 
-`python run.py ingest --engine_string=<engine_string> --artist=<ARTIST> --title=<TITLE> --album=<ALBUM>`
+`python run.py ingest --engine_string=<engine_string> --title=<TITLE> --rating=<RATING> --popularity=<POPULARITY> --cluster=<CLUSTER>`
 
-By default, `python run.py ingest` adds *Minor Cause* by Emancipator to the SQLite database located in `sqlite:///data/tracks.db`.
+By default, `python run.py ingest` adds the movie *芳华* with rating 4.5, popularity 1000 and cluster number 1 to the SQLite database located in `sqlite:///data/movies.db`.
 
 #### Defining your engine string 
 A SQLAlchemy database connection is defined by a string with the following format:
@@ -113,7 +152,7 @@ The `+dialect` is optional and if not provided, a default is used. For a more de
 A local SQLite database can be created for development and local testing. It does not require a username or password and replaces the host and port with the path to the database file: 
 
 ```python
-engine_string='sqlite:///data/tracks.db'
+engine_string='sqlite:///data/movies.db'
 
 ```
 
@@ -122,7 +161,7 @@ The three `///` denote that it is a relative path to where the code is being run
 You can also define the absolute path with four `////`, for example:
 
 ```python
-engine_string = 'sqlite://///Users/cmawer/Repos/2020-MSIA423-template-repository/data/tracks.db'
+engine_string = 'sqlite://///Users/cmawer/Repos/2020-MSIA423-template-repository/data/movies.db'
 ```
 
 
@@ -159,21 +198,21 @@ You should now be able to access the app at http://0.0.0.0:5000/ in your browser
 The Dockerfile for running the flask app is in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
 ```bash
- docker build -f app/Dockerfile -t pennylane .
+ docker build -f app/Dockerfile -t msia423 .
 ```
 
-This command builds the Docker image, with the tag `pennylane`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
+This command builds the Docker image, with the tag `msia423`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
  
 ### 2. Run the container 
 
 To run the app, run from this directory: 
 
 ```bash
-docker run -p 5000:5000 --name test pennylane
+docker run -p 5000:5000 --name test msia423
 ```
 You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
 
-This command runs the `pennylane` image as a container named `test` and forwards the port 5000 from container to your laptop so that you can access the flask app exposed through that port. 
+This command runs the `msia423` image as a container named `test` and forwards the port 5000 from container to your laptop so that you can access the flask app exposed through that port. 
 
 If `PORT` in `config/flaskconfig.py` is changed, this port should be changed accordingly (as should the `EXPOSE 5000` line in `app/Dockerfile`)
 

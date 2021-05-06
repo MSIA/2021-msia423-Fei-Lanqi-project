@@ -21,7 +21,7 @@ class Movies(Base):
 	id = Column(Integer, primary_key=True)
 	title = Column(String(100), unique=False, nullable=False)
 	rating = Column(Float, unique=False, nullable=False)
-    popularity = Column(Float, unique=False, nullable=False)
+	popularity = Column(Float, unique=False, nullable=False)
 	cluster = Column(Integer, unique=False, nullable=False)
   	  
 	def __repr__(self):
