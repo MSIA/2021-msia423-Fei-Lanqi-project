@@ -55,7 +55,7 @@ class MovieManager:
             self.db = SQLAlchemy(app)
             self.session = self.db.session
         elif engine_string:
-            engine = sqlalchemy.create_engine(engine_string)
+            engine = sql.create_engine(engine_string)
             Session = sessionmaker(bind=engine)
             self.session = Session()
         else:
@@ -67,7 +67,7 @@ class MovieManager:
         """
         self.session.close()
 
-    def add_track(self, title: str, artist: str, album: str) -> None:
+    def add_movie(self, title: str, rating: float, popularity: int, cluster: int) -> None:
         """Seeds an existing database with additional movies.
         Args:
             title: str - Title of movie

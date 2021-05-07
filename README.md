@@ -127,8 +127,9 @@ Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
 - create the database in the RDS for this project:
 
 `docker run -it --env MYSQL_HOST --env MYSQL_PORT --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_DATABASE msia423 run.py create_db`
+
 , the following enviroment variables might be needed:
-`export MYSQL_PASSWORD=msia423-fei-lanqi.cgmsms1nwcii.us-east-1.rds.amazonaws.com`
+`export MYSQL_HOST=msia423-fei-lanqi.cgmsms1nwcii.us-east-1.rds.amazonaws.com`
 `export MYSQL_DATABASE=msia423_db`
 
 To only access and look into the database:
