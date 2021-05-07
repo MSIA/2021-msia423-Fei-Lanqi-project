@@ -21,6 +21,6 @@ if SQLALCHEMY_DATABASE_URI is not None:
 elif DB_HOST is None:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///data/movies.db'
 else:
-    SQLALCHEMY_DATABASE_URI = '{dialect}://{user}:{pw}@{host}:{port}/{db}'.format(dialect=DB_DIALECT, user=DB_USER,
+    SQLALCHEMY_DATABASE_URI = '{dialect}://{user}:{pw}@{host}:{port}/{db}?charset=utf8mb4'.format(dialect=DB_DIALECT, user=DB_USER,
                                                                                   pw=DB_PW, host=DB_HOST, port=DB_PORT,
                                                                                   db=DATABASE)

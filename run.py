@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if sp_used == 'create_db':
         create_db(args.engine_string)
     elif sp_used == 'ingest':
-        tm = TrackManager(engine_string=args.engine_string)
+        tm = MovieManager(engine_string=args.engine_string)
         tm.add_movie(args.title, args.rating, args.popularity, args.cluster)
         tm.close()
     else:
