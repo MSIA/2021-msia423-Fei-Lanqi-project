@@ -20,6 +20,14 @@ logging.getLogger("s3fs").setLevel(logging.ERROR)
 logger = logging.getLogger('s3')
 
 def download_from_source(local_path, file_name):
+    """
+    Download the datasets from the github repo. This is not necessary if one already clones the repo.
+
+    Args:
+        local_path (str) - local path to save the downloaded datasets
+        file_name (str) - the dataset name to download
+    """
+
     url = "https://raw.githubusercontent.com/MSIA/2021-msia423-Fei-Lanqi-project/develop/data/sample/" + file_name # change develop branch to main when the branch is merged
     save_path = local_path + file_name
     response = requests.get(url)
@@ -29,6 +37,17 @@ def download_from_source(local_path, file_name):
         logger.info('Data %s downloaded from %s to %s', file_name, url, local_path)
 
 def parse_s3(s3path):
+    """
+    Parse the input s3 path to get the bucket name
+
+    Args:
+        s3path (str) - s3 path
+
+    Returns:
+        s3bucket (str) - s3 bucket name
+        s3path (str) - se path
+    """
+
     regex = r"s3://([\w._-]+)/([\w./_-]+)"
 
     m = re.match(regex, s3path)
@@ -38,6 +57,14 @@ def parse_s3(s3path):
     return s3bucket, s3path
 
 def upload_file_to_s3(local_path, s3path, file_name):
+    """
+    Upload the file in the local path to the given s3 path
+
+    Args:
+        local_path (str) - the local path which has the data
+        s3path (str) - the s3 path which the data will be uploaded to
+        file_name (str) - the name of the data file
+    """
     s3bucket, s3_just_path = parse_s3(s3path+file_name)
 
     s3 = boto3.resource("s3")

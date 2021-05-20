@@ -24,7 +24,7 @@ if __name__ == '__main__':
     sb_ingest.add_argument("--rating", default=4.5, help="Average rating of movie to be added")
     sb_ingest.add_argument("--popularity", default=1000, help="Popularity of movie to be added")
     sb_ingest.add_argument("--cluster", default=1, help="Cluster of movie to be added")
-    sb_ingest.add_argument("--engine_string", default='sqlite:///data/movies.db',
+    sb_ingest.add_argument("--engine_string", default='sqlite:///data/movies.db?charset=utf8mb4',
                            help="SQLAlchemy connection URI for database")
 
     args = parser.parse_args()
