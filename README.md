@@ -94,7 +94,7 @@ To download the raw datasets and write them into the S3 bucket, run:
 
 `python src/data_acquisition.py --local_path=<local_path> --s3_path=<s3_path> download_upload`
 
-By default, `python src/data_acquisition.py download_upload` downloads the three raw datasets from `data/sample/` in this repo to local path `data/sample/` and uploads them to `s3://2021-msia423-fei-lanqi/raw/`. Note that the S3 raw folder already contains the raw datasets. To test the script, one might want to write to a different S3 bucket. One could also use the subparser `download` or `upload` to only download the datasets from source or only upload the datasets to S3.
+By default, `python src/data_acquisition.py download_upload` downloads the three raw datasets from `data/sample/` in this repo to local path `data/sample/` and uploads them to `s3://2021-msia423-fei-lanqi/raw/`. To test the script, make sure to specify the argument `--s3_path` and change it to your S3 path. Also note that the arguments have to be provided before the subparser `ownload_upload`. One could also use the subparser `download` or `upload` to only download the datasets from source or only upload the datasets to S3.
 
 To write the datasets into S3 bucket in Docker:
 
