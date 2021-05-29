@@ -1,0 +1,22 @@
+acquire:  
+  acquire:
+    s3_path: 's3://2021-msia423-fei-lanqi/raw/'
+    file_name_movies: movies.csv
+    file_name_links: links.csv
+    file_name_ratings: ratings.csv
+clean:
+  filter:
+    user_min: 50
+    movie_min: 50
+featurize:
+  featurize:
+    feature_names:
+      - rating
+      - popularity
+train:
+predict:
+  predict_df:
+    top_n: 10
+evaluate:
+  
+  

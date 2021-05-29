@@ -5,7 +5,17 @@ logging.config.fileConfig('config/logging/local.conf')
 logger = logging.getLogger('douban-rs-pipeline')
 
 from src.add_movie import MovieManager, create_db
+import src.acquire as acquire
+import src.clean as clean
+import src.featurize as featurize
+import src.train as train
+import src.predict as predict
+import src.evaluate as evaluate
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
+
+import yaml
+import pandas as pd
+import numpy as np
 
 if __name__ == '__main__':
 
@@ -18,22 +28,118 @@ if __name__ == '__main__':
     sb_create.add_argument("--engine_string", default=SQLALCHEMY_DATABASE_URI,
                            help="SQLAlchemy connection URI for database")
 
-    # Sub-parser for ingesting new data
-    sb_ingest = subparsers.add_parser("ingest", description="Add data to database")
-    sb_ingest.add_argument("--title", default="芳华", help="Title of movie to be added")
-    sb_ingest.add_argument("--rating", default=4.5, help="Average rating of movie to be added")
-    sb_ingest.add_argument("--popularity", default=1000, help="Popularity of movie to be added")
-    sb_ingest.add_argument("--cluster", default=1, help="Cluster of movie to be added")
-    sb_ingest.add_argument("--engine_string", default='sqlite:///data/movies.db?charset=utf8mb4',
-                           help="SQLAlchemy connection URI for database")
+    # Sub-parser for ingesting movies / predictions table
+    sb_ingest_movies = subparsers.add_parser("ingest_to_movies", description="Add data to movies table")
+    sb_ingest_movies.add_argument("--file_path", default="data/outputs/movies-clean.csv", help="Path of the csv file")
+
+    sb_ingest_pred = subparsers.add_parser("ingest_to_predictions", description="Add data to predictions table")
+    sb_ingest_pred.add_argument("--file_path", default="data/outputs/predictions-predict.csv", help="Path of the csv file")
+
+    # Model pipeline
+    # Sub-parser for acquiring data
+    sb_acquire = subparsers.add_parser("acquire", description="Acquire data from S3")
+    sb_acquire.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_acquire.add_argument("--output_movies", default="data/outputs/movies-raw.csv", help="Path to save raw movies data")
+    sb_acquire.add_argument("--output_links", default="data/outputs/links-raw.csv", help="Path to save raw links data")
+    sb_acquire.add_argument("--output_ratings", default="data/outputs/ratings-raw.csv", help="Path to save raw ratings data")
+
+    # Sub-parser for cleaning data
+    sb_clean = subparsers.add_parser("clean", description="Clean raw data")
+    sb_clean.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_clean.add_argument("--input_movies", default="data/outputs/movies-raw.csv", help="Path to load raw movies data")
+    sb_clean.add_argument("--input_links", default="data/outputs/links-raw.csv", help="Path to load raw links data")
+    sb_clean.add_argument("--input_ratings", default="data/outputs/ratings-raw.csv", help="Path to load raw ratings data")
+    sb_clean.add_argument("--output_movies", default="data/outputs/movies-clean.csv", help="Path to save cleaned and merged movies data")
+    sb_clean.add_argument("--output_ratings", default="data/outputs/ratings-clean.csv", help="Path to save cleaned ratings data")
+
+    # Sub-parser for featurizing data
+    sb_featurize = subparsers.add_parser("featurize", description="Featurize cleaned data")
+    sb_featurize.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_featurize.add_argument("--input_movies", default="data/outputs/movies-clean.csv", help="Path to load cleanaed movies data")
+    sb_featurize.add_argument("--input_ratings", default="data/outputs/ratings-clean.csv", help="Path to load cleaned ratings data")
+    sb_featurize.add_argument("--output_movies", default="data/outputs/movies-feature.csv", help="Path to save featurized and merged movies data")
+    sb_featurize.add_argument("--output_ratings", default="data/outputs/ratings-feature.csv", help="Path to save featurized ratings data")
+
+    # Sub-parser for training model
+    sb_train = subparsers.add_parser("train", description="Training model")
+    sb_train.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_train.add_argument("--input_ratings", default="data/outputs/ratings-clean.csv", help="Path to load cleaned ratings data")
+    sb_train.add_argument("--output_ratings_pivot", default="data/outputs/ratings-pivot-train.csv", help="Path to ratings matrix")
+    sb_train.add_argument("--output_movie_id", default="data/outputs/movieID-train.npy", help="Path to save movie IDs array")
+    sb_train.add_argument("--output_user_id", default="data/outputs/userID-train.npy", help="Path to save user IDs array")
+    sb_train.add_argument("--output_corr", default="data/outputs/corr-train.npy", help="Path to save trained distance matrix")
+
+    # Sub-parser for generating predictions
+    sb_predict = subparsers.add_parser("predict", description="Generate predictions")
+    sb_predict.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_predict.add_argument("--input_movie_id", default="data/outputs/movieID-train.npy", help="Path to load movieID array")
+    sb_predict.add_argument("--input_corr", default="data/outputs/corr-train.npy", help="Path to load distance matrix")
+    sb_predict.add_argument("--output_predictions", default="data/outputs/predictions-predict.csv", help="Path to save predictions")
+
+    # Sub-parser for evaluating model
+    sb_evaluate = subparsers.add_parser("evaluate", description="Evaluate model performance")
+    sb_evaluate.add_argument("--config", default="config/modelconfig.yaml", help="Model configuration file")
+    sb_evaluate.add_argument("--input_ratings_pivot", default="data/outputs/ratings-pivot-train.csv", help="Path to load ratings matrix")
+    sb_evaluate.add_argument("--input_user_id", default="data/outputs/userID-train.npy", help="Path to load userID array")
+    sb_evaluate.add_argument("--input_movie_id", default="data/outputs/movieID-train.npy", help="Path to load movieID array")
+    sb_evaluate.add_argument("--input_corr", default="data/outputs/corr-train.npy", help="Path to load distance matrix")
+    sb_evaluate.add_argument("--output", default="data/outputs/score-evaluate.txt", help="Path to save the satisfaction score")
 
     args = parser.parse_args()
     sp_used = args.subparser_name
+
+    # Load configuration file for parameters and tmo path
+    with open(args.config, "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
     if sp_used == 'create_db':
         create_db(args.engine_string)
-    elif sp_used == 'ingest':
-        tm = MovieManager(engine_string=args.engine_string)
-        tm.add_movie(args.title, args.rating, args.popularity, args.cluster)
-        tm.close()
+    elif sp_used == 'ingest_to_movies':
+        mm = MovieManager(engine_string=args.engine_string)
+        mm.add_movie_from_csv(args.file_path)
+        mm.close()
+    elif sp_used == 'ingest_to_predictions':
+        mm = MovieManager(engine_string=args.engine_string)
+        mm.add_prediction_from_csv(args.file_path)
+        mm.close()
+    elif sp_used == 'acquire':
+        movies, links, ratings = acquire.acquire(**config['acquire']['acquire'])
+        movies.to_csv(args.output_movies, index=False)
+        links.to_csv(args.output_links, index=False)
+        ratings.to_csv(args.output_ratings, index=False)
+        logger.info('Raw data saved to the given paths')
+    elif sp_used == 'clean':
+        movies = pd.read_csv(args.input_movies); links = pd.read_csv(args.input_links); ratings = pd.read_csv(args.input_ratings)
+        logger.info('Raw data loaded from the given paths')
+        movies, ratings = clean.clean(movies, links, ratings, config['clean'])
+        movies.to_csv(args.output_movies, index=False); ratings.to_csv(args.output_ratings, index=False)
+        logger.info("Cleaned data saved to the given paths")
+    elif sp_used == 'featurize':
+        movies = pd.read_csv(args.input_movies); ratings = pd.read_csv(args.input_ratings)
+        logger.info('Cleaned data loaded from the given paths')
+        movies, ratings = featurize.featurize(movies, ratings, **config['featurize']['featurize'])
+        movies.to_csv(args.output_movies, index=False); ratings.to_csv(args.output_ratings, index=False)
+        logger.info("Featurized data saved to the given paths")
+    elif sp_used == 'train':
+        ratings = pd.read_csv(args.input_ratings); logger.info('Featurized data loaded from the given paths')
+        ratings_pivot, movieID, userID, corr = train.train(ratings)
+        ratings_pivot.to_csv(args.output_ratings_pivot, index=False)
+        np.save(args.output_movie_id, movieID); np.save(args.output_user_id, userID)
+        np.save(args.output_corr, corr)
+        logger.info("Model outputs saved to the given paths")
+    elif sp_used == 'predict':
+        corr = np.load(args.input_corr); movieID = np.load(args.input_movie_id)
+        logger.info('Trained objects loaded from the given paths')
+        predictions = predict.predict(corr, movieID, config['predict'])
+        predictions.to_csv(args.output_predictions, index=False)
+        logger.info("Predictions saved to the given paths")
+    elif sp_used == 'evaluate':
+        ratings_pivot = pd.read_csv(args.input_ratings_pivot)
+        corr = np.load(args.input_corr); movieID = np.load(args.input_movie_id); userID = np.load(args.input_user_id)
+        logger.info('Inputs loaded from the given paths')
+        result = evaluate.evaluate(ratings_pivot, movieID, userID, corr)
+        with open(args.output, 'w') as f:
+            f.write("balance %.2f" % result)
+        logger.info("Evaluation score saved to the given path")
     else:
         parser.print_help()

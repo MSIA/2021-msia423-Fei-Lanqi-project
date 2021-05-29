@@ -1,43 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <link href="static/basic.css" rel="stylesheet">
+   <meta charset="UTF-8">
+   <link href="static/basic.css" rel="stylesheet">
 </head>
 
 <body>
-    <h3>
-         <a href = "{{ url_for('index') }}">Penny Lane Music Recommender</a>
-    </h3>
+   <h3>
+      <a href = "{{ url_for('index') }}">Douban Smart Movie Finder</a>
+   </h3>
+   <hr/>
 
-    <hr/>
-    <table>
-         <thead>
-            <tr>
-               <th>Title</th>
-               <th>Artist</th>
-               <th>Album</th>
-            </tr>
-         </thead>
-
-         <tbody>
-            {% for track in tracks %}
-               <tr>
-                   <td>{{ track.title }}</td>
-                   <td>{{ track.artist }}</td>
-                   <td>{{ track.album }}</td>
-               </tr>
-            {% endfor %}
-         </tbody>
-      </table>
-      <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
+   <form action="{{ url_for('find_movies') }}" method=post class=find-movies>
       <dl>
-        <input type=text size=15 name=title placeholder="Title">
-        <input type=text size=15 name=artist placeholder="Artist">
-        <input type=text size=15 name=album placeholder="Album">
-        <input type=submit value=Add>
+         <input type=text size=15 name=id placeholder="Douban ID">
+         <input type=text size=15 name=title placeholder="IMDB ID">
+         <input type=submit value=Find>
       </dl>
-    </form>
+   </form>
+
+   <table>
+      <thead>
+         <tr>
+            <th>Douban ID</th>
+            <th>IMDB ID</th>
+            <th>Title</th>
+            <th>Rating</th>
+            <th>Popularity</th>
+         </tr>
+      </thead>
+
+      <tbody>
+         {% for movie in movies %}
+            <tr>
+               <td><a href="{{ url_for('redirect_to_douban', doubanId=movie.doubanId) }}">{{ movie.doubanId }}</a></td>
+               <td><a href="{{ url_for('redirect_to_imdb', doubanId=movie.imdbId) }}">{{ movie.imdbId }}</a></td>
+               <td>{{ movie.title }}</td>
+               <td>{{ movie.rating }}</td>
+               <td>{{ movie.popularity }}</td>
+            </tr>
+         {% endfor %}
+      </tbody>
+   </table>
+
+
 
 </body>
 </html>
