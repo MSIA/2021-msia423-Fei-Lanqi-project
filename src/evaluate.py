@@ -8,8 +8,9 @@ logger = logging.getLogger(__name__)
 
 def get_fav_movies(ratings_pivot, movieID, userID):
     """Find each user's favorite movie."""
-
+    
     ratings_pivot_t = ratings_pivot.transpose()
+    ratings_pivot_t.index = userID; ratings_pivot_t.columns = movieID # add indices
 
     fav_movies = ratings_pivot_t.values.argmax(axis=1)
     fav_movies = [movieID[x] for x in fav_movies]
@@ -41,9 +42,10 @@ def get_score(fav_movies, ratings_pivot_t):
 def evaluate(ratings_pivot, movieID, userID, corr):
     """Generate the final satisfaction score."""
 
+    movieID = movieID.tolist(); userID = userID.tolist()
+
     fav_movies, ratings_pivot_t = get_fav_movies(ratings_pivot, movieID, userID)
     fav_movies = get_most_similar_movie(fav_movies, movieID, corr)
-
     result = get_score(fav_movies, ratings_pivot_t)
 
     return result

@@ -14,7 +14,8 @@ def get_rating_matrix(ratings):
     movieID = ratings_pivot.index
     userID = ratings_pivot.columns
 
-    logger.info("The rating matrix of shape (%d,%d) is generated.", ratings_pivot.shape[0], ratings_pivot.shape[1])
+    logger.info("The rating matrix of shape (%d,%d) is generated.", ratings_pivot.shape[0], 
+    ratings_pivot.shape[1])
 
     return ratings_pivot, movieID, userID
 
@@ -23,7 +24,8 @@ def compute_distance(ratings_pivot):
 
     corr = np.corrcoef(ratings_pivot)
 
-    logger.info("The movie distance/correlation matrix of shape (%d,%d) is generated.", corr.shape[0], corr.shape[1])
+    logger.info("The movie distance/correlation matrix of shape (%d,%d) is generated.", corr.shape[0], 
+    corr.shape[1])
 
     return corr
 
@@ -31,6 +33,6 @@ def train(ratings):
     """Perform all model training steps."""
 
     ratings_pivot, movieID, userID = get_rating_matrix(ratings)
-    corr = compute_distance(ratings)
+    corr = compute_distance(ratings_pivot)
 
     return ratings_pivot, movieID, userID, corr

@@ -1,10 +1,8 @@
 import traceback
 import logging.config
 from flask import Flask
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect
 from sqlalchemy import desc
-import pandas as pd
-import numpy as np
 
 # Initialize the Flask application
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
@@ -24,26 +22,41 @@ movie_manager = MovieManager(app)
 
 @app.route('/')
 def index():
-    """Main view that lists songs in the database.
+    """Main view that lists movies in the database.
 
-    Create view into index page that uses data queried from Track database and
+    Create view into index page that uses data queried from Movie database and
     inserts it into the msiapp/templates/index.html template.
 
     Returns: rendered html template
+    """
 
+
+    return render_template('index.html')
+
+
+
+@app.route('/movies')
+def show_movies():
+    """Main view that lists movies in the database.
+
+    Create view into index page that uses data queried from Movie database and
+    inserts it into the msiapp/templates/index.html template.
+
+    Returns: rendered html template
     """
 
     try:
-        movies = movie_manager.session.query(Movies).limit(app.config["MAX_ROWS_SHOW"]).all()
+        movies = movie_manager.session.query(Movies).order_by(desc(Movies.popularity)).\
+        limit(app.config["MAX_ROWS_SHOW"]).all()
         logger.debug("Index page accessed")
-        return render_template('index.html', movies=movies)
+        return render_template('find.html', movies=movies)
     except:
         traceback.print_exc()
         logger.warning("Not able to display movies, error page returned")
         return render_template('error.html')
 
 
-@app.route('/find', methods=['POST'])
+@app.route('/find', methods=['GET','POST'])
 def find_movies():
     """Find similar movies given a POST with a movie input
 
@@ -51,28 +64,49 @@ def find_movies():
     """
 
     try:
-        doubanId = parse_to_int(request.form['Douban ID'])
-        imdbId = parse_to_int(request.form['IMDB ID'])
+    
+        if request.method == "POST":
+            doubanId = request.form['doubanId']; imdbId = request.form['imdbId']; title = request.form['title']
+            order = request.form['order']
+
+
 
         # get movieId of requested movie
-        if doubanId != "":
+        if doubanId != '':
+            doubanId = parse_to_int(doubanId)
             query = "SELECT * FROM movies WHERE doubanId = {}".format(doubanId)
-        else:
+        elif imdbId != '':
+            imdbId = parse_to_int(imdbId)
             query = "SELECT * FROM movies WHERE imdbId = {}".format(imdbId)
+        else:
+            query = "SELECT * FROM movies WHERE title = '{}'".format(title)
 
-        movie_requested = movie_manager.session.execute(query).first(); movieId = movie_requested[0]
+        movie_requested = movie_manager.session.execute(query).first()
+
+        if movie_requested == None: 
+            logger.warning("The movie was not found, error page returned")
+            return render_template('notfound.html')
+
+        movieId = movie_requested[0] # get first movie matching the condition
 
         # get similar movies
         query = "SELECT * FROM predictions WHERE movieId = {}".format(movieId)
-        similar_movies = movie_manager.session.execute(query).first()[1:]
-        similar_movies = tuple(similar_movies)
+        similar_movies_list = movie_manager.session.execute(query).first()[1:]
+        similar_movies = tuple(similar_movies_list)
 
-        similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).\
-            order_by(desc(Movies.popularity)).all() # default rank by popularity
+        if order == "popularity": # rank by popularity
+            similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).\
+            order_by(desc(Movies.popularity)).all()
+        elif order == "rating": # rank by rating
+            similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).\
+            order_by(desc(Movies.rating)).all()
+        else: # rank by similarity
+            similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).all()
+            similar_movies = sorted(similar_movies, key=lambda o: similar_movies_list.index(o.movieId))
 
         logger.debug("Output page accessed")
 
-        return render_template('output.html', movies=similar_movies)
+        return render_template('find.html', movies=similar_movies) # output.html
     except:
         traceback.print_exc()
         logger.warning("Not able to display movies, error page returned")
@@ -83,18 +117,25 @@ def parse_to_int(string):
 
     try:
         string_int = int(string)
+        return string_int
     except ValueError:
-        print('Please enter an integer')
+        logger.error('A non-integer value was entered in web input')
     
-    return string_int
+    
 
 
-@app.route('/douban')
-def redirect_to_douban(doubanId):
+@app.route('/douban/')
+def redirect_to_douban():
+    """Redirects to the Douban page of a movie based on the Douban ID"""
+
+    doubanId = request.args.get("doubanId")
     return redirect("https://movie.douban.com/subject/{}/".format(doubanId))
 
-@app.route('/imdb')
-def redirect_to_imdb(imdbId):
+@app.route('/imdb/')
+def redirect_to_imdb():
+    """Redirects to the IMDB page of a movie based on the IMDB ID"""
+
+    imdbId = request.args.get("imdbId")
     return redirect("https://www.imdb.com/title/tt{}/".format(imdbId))
 
 if __name__ == '__main__':

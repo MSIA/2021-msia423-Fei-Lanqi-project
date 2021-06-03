@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def predict_aux(dist_list, movieID):
-    """Auxilliary function that takes a movie's distance array and returns an array of movie ids, ranked by similarity."""
+    """Auxilliary function that takes a movie's distance array and returns an array of movie ids."""
     
     result = np.argsort(-dist_list)
     result = [movieID[i] for i in result]

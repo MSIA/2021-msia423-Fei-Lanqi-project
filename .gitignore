@@ -9,10 +9,12 @@ __pycache__/
 .vscode/
 .mysqlconfig
 .awskey
+copilot/
 
 data/*
 !data/sample/
 !data/external/
+!data/outputs/
 config/local
 !.gitkeep
 

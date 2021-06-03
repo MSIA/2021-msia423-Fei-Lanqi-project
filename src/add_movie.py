@@ -6,7 +6,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base 
 from sqlalchemy import Column, Integer, String, Float
 from flask_sqlalchemy import SQLAlchemy
-from numpy import genfromtxt
+# from numpy import genfromtxt
+import numpy as np
+import pandas as pd
 
 
 logger = logging.getLogger(__name__)
@@ -21,10 +23,10 @@ class Movies(Base):
 
     movieId = Column(Integer, primary_key=True)
     doubanId = Column(Integer, unique=True, nullable=True)
-    imdbId = Column(Float, unique=True, nullable=True)
+    imdbId = Column(Integer, unique=True, nullable=True)
     title = Column(String(100), unique=False, nullable=True)
     rating = Column(Float, unique=False, nullable=False)
-    popularity = Column(Float, unique=False, nullable=False)
+    popularity = Column(Integer, unique=False, nullable=False)
     
     def __repr__(self):
 	    return '<Movie %r>' % self.title
@@ -43,6 +45,7 @@ class Predictions(Base):
     top6 = Column(Integer, unique=False, nullable=True)
     top7 = Column(Integer, unique=False, nullable=True)
     top8 = Column(Integer, unique=False, nullable=True)
+    top9 = Column(Integer, unique=False, nullable=True)
     top10 = Column(Integer, unique=False, nullable=True)
     
     def __repr__(self):
@@ -88,7 +91,7 @@ class MovieManager:
         """
         self.session.close()
 
-    def add_movie(self, movieId: int, doubanId: int, imdbId: int, title: str, rating: float, popularity: int, cluster: int) -> None:
+    def add_movie(self, movieId: int, doubanId: int, imdbId: int, title: str, rating: float, popularity: int) -> None:
         """Seeds an existing database with additional movies.
         Args:
             movieId: int - Id of movie
@@ -101,17 +104,11 @@ class MovieManager:
         """
 
         session = self.session
-        movie = Movies(movieId=movieId, doubanId=doubanId, imdbId=imdbId, title=title, rating=rating, popularity=popularity)
+        movie = Movies(movieId=movieId, doubanId=doubanId, imdbId=imdbId, title=title, rating=rating, 
+        popularity=popularity)
         session.add(movie)
         session.commit()
         logger.info("Movie %s, added to database", title)
-
-    def __load_data(self, file_name):
-        """Auxilliary function for ingesting from csv."""
-
-        data = genfromtxt(file_name, delimiter=',', skip_header=1)
-        
-        return data.tolist()
 
     def add_movie_from_csv(self, file_name):
         """Add movies to database from a csv file."""
@@ -119,27 +116,39 @@ class MovieManager:
         session = self.session
 
         try:
-       
-            data = self.__load_data(file_name) 
+            data = pd.read_csv(file_name)
+            logger.info("Movies data loaded.")
 
-            for i in data:
-                record = Movies(**{
-                    'movieId' : i[0],
-                    'doubanId' : i[1],
-                    'imdbId' : i[2],
-                    'title' : i[3],
-                    'rating' : i[4],
-                    'popularity' : i[5]
-                })
-                session.add(record) #Add all the records
+            for i in range(data.shape[0]):
 
-            session.commit() #Attempt to commit all the records
+                record = {
+                        'movieId' : data.iloc[i,0],
+                        'doubanId' : data.iloc[i,1],
+                        'imdbId' : data.iloc[i,2],
+                        'title' : str(data.iloc[i,3]),
+                        'rating' : data.iloc[i,4],
+                        'popularity' : data.iloc[i,5]
+                }
+                if np.isnan(record['imdbId']): 
+                    del record['imdbId']
+                else:
+                    record['imdbId'] = int(record['imdbId'])
+                if record['title']=='nan': del record['title']
+                
+                record = Movies(**record)
+                session.add(record) # add all the records
+
+            session.commit() # attempt to commit all the records
+
+            logger.info("Movies from file {} are added to database".format(file_name))
+
         except:
-            session.rollback() #Rollback the changes on error
+            session.rollback() # rollback the changes on error
+            logger.debug("Rollback due to an error")
         finally:
             session.close() #Close the connection
         
-        logger.info("Movies from file {} are added to database".format(file_name))
+        
 
     def add_prediction(self, movieId, pred) -> None:
         """Seeds an existing database with additional predictions.
@@ -161,31 +170,34 @@ class MovieManager:
 
         session = self.session
 
+        data = pd.read_csv(file_name)
+        logger.info("Predictions data loaded.")
+
         try:
-       
-            data = self.__load_data(file_name) 
+            for i in range(data.shape[0]):
+                record = {
+                        'movieId' : data.iloc[i,0],
+                        'top1' : data.iloc[i,1],
+                        'top2' : data.iloc[i,2],
+                        'top3' : data.iloc[i,3],
+                        'top4' : data.iloc[i,4],
+                        'top5' : data.iloc[i,5],
+                        'top6' : data.iloc[i,6],
+                        'top7' : data.iloc[i,7],
+                        'top8' : data.iloc[i,8],
+                        'top9' : data.iloc[i,9],
+                        'top10' : data.iloc[i,10],
+                }
+                record = Predictions(**record)
+                session.add(record) # add all the records
 
-            for i in data:
-                record = Predictions(**{
-                    'movieId' : i[0],
-                    'top1' : i[1],
-                    'top2' : i[2],
-                    'top3' : i[3],
-                    'top4' : i[4],
-                    'top5' : i[5],
-                    'top6' : i[6],
-                    'top7' : i[7],
-                    'top8' : i[8],
-                    'top9' : i[9],
-                    'top10' : i[10]
-                })
-                session.add(record) #Add all the records
-
-            session.commit() #Attempt to commit all the records
+            session.commit() # attempt to commit all the records
+            logger.info("Predictions from file {} are added to database".format(file_name))
         except:
             session.rollback() #Rollback the changes on error
+            logger.debug("Rollback due to an error")
         finally:
             session.close() #Close the connection
         
-        logger.info("Predictions from file {} are added to database".format(file_name))
+        
 

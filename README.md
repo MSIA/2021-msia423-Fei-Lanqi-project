@@ -97,7 +97,9 @@ The original dataset is found [here](https://github.com/SophonPlus/ChineseNlpCor
 
 To download the raw datasets and write them into the S3 bucket, run:
 
-`python src/data_acquisition.py --local_path=<local_path> --s3_path=<s3_path> download_upload`
+```bash
+python src/data_acquisition.py --local_path=<local_path> --s3_path=<s3_path> download_upload
+```
 
 By default, `python src/data_acquisition.py download_upload` downloads the three raw datasets from `data/sample/` in this repo to local path `data/sample/` and uploads them to `s3://2021-msia423-fei-lanqi/raw/`. To test the script, make sure to specify the argument `--s3_path` and change it to your S3 path. Also note that the arguments have to be provided before the subparser `ownload_upload`. One could also use the subparser `download` or `upload` to only download the datasets from source or only upload the datasets to S3.
 
@@ -111,16 +113,22 @@ Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
 
 - run the script:
 
-`docker run -it --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY msia423 src/data_acquisition.py --s3_path=<s3_path> upload`
+```bash
+docker run -it --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY msia423 src/data_acquisition.py --s3_path=<s3_path> upload
+```
 
 - check the data is uploaded to s3:
 
-`aws s3 ls <s3_path>`
+```bash
+aws s3 ls <s3_path>
+```
 
 #### Create the database 
 To create the database in the location configured in `config.py`, run: 
 
-`python run.py create_db --engine_string=<engine_string>`
+```bash
+python run.py create_db --engine_string=<engine_string>
+```
 
 By default, `python run.py create_db` creates a database at `sqlite:///data/movies.db` if MYSQL_HOST is not given.
 
@@ -131,47 +139,61 @@ Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
 
 - create the database in the RDS for this project:
 
-`docker run -it --env MYSQL_HOST --env MYSQL_PORT --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_DATABASE msia423 run.py create_db`
-
-, the following enviroment variables might be needed:
-`export MYSQL_HOST=msia423-fei-lanqi.cgmsms1nwcii.us-east-1.rds.amazonaws.com`
-`export MYSQL_DATABASE=msia423_db`
+```bash
+docker run -it --env MYSQL_HOST --env MYSQL_PORT --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_DATABASE msia423 run.py create_db
+```
 
 To only access and look into the database:
 `docker run -it --rm mysql:5.7.33 mysql -h${MYSQL_HOST} -u${MYSQL_USER} -p${MYSQL_PASSWORD}`, then you can run `SHOW DATABASES;` -> `USE msia423;` -> `SHOW TABLES;`->`DESCRIBE movies;` to check the schema.
 
 #### Adding movies 
-To add movies to the database:
+To add data to movies table from a csv file to the database:
 
-`python run.py ingest --engine_string=<engine_string> --title=<TITLE> --rating=<RATING> --popularity=<POPULARITY> --cluster=<CLUSTER>`
-
-By default, `python run.py ingest` adds the movie *芳华* with rating 4.5, popularity 1000 and cluster number 1 to the SQLite database located in `sqlite:///data/movies.db`.
-
-#### Defining your engine string 
-A SQLAlchemy database connection is defined by a string with the following format:
-
-`dialect+driver://username:password@host:port/database`
-
-The `+dialect` is optional and if not provided, a default is used. For a more detailed description of what `dialect` and `driver` are and how a connection is made, you can see the documentation [here](https://docs.sqlalchemy.org/en/13/core/engines.html). We will cover SQLAlchemy and connection strings in the SQLAlchemy lab session on 
-##### Local SQLite database 
-
-A local SQLite database can be created for development and local testing. It does not require a username or password and replaces the host and port with the path to the database file: 
-
-```python
-engine_string='sqlite:///data/movies.db'
-
+```bash
+python run.py ingest_to_movies --engine_string=<engine_string> --file_path=<file_path>
 ```
 
-The three `///` denote that it is a relative path to where the code is being run (which is from the root of this directory).
+The movies csv file should be the one generated from model pipeline, which will by default lie under `data/outputs/movies-feature.csv`.
 
-You can also define the absolute path with four `////`, for example:
+Similarly, to add predictions from a csv to the databse:
 
-```python
-engine_string = 'sqlite://///Users/cmawer/Repos/2020-MSIA423-template-repository/data/movies.db'
+```bash
+python run.py ingest_to_predictions --engine_string=<engine_string> --file_path=<file_path>
 ```
 
+The predictions csv file should be the one generated from model pipeline, which will by default lie under `data/outputs/predictions-predict.csv`. Note that by default only 10 similar movies are predicted for each movie, due to memory limit. This can be expanded but the schema of the database need to be modified.
 
-### 2. Configure Flask app 
+To get movies and predictions data, please **do the step [Model Pipeline](#model-pipeline]) below before building ingesting data**.
+
+### 2. Model Pipeline
+
+To run the model pipeline (acquire, clean, featurize, train, predict and evaluate), run the bash script:
+
+```bash
+./app/run-pipeline.sh
+```
+
+To run it in Docker, do:
+
+```bash
+docker build -f app/Dockerfile_pipeline -t douban-pipeline . 
+```
+
+```bash
+docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ douban-pipeline --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY app/run-pipeline.sh
+```
+
+### 4. Run the Flask app 
+
+To run the Flask app locally, run: 
+
+```bash
+python app.py
+```
+
+You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
+
+#### Configure Flask app 
 
 `config/flaskconfig.py` holds the configurations for the Flask app. It includes the following configurations:
 
@@ -181,25 +203,15 @@ LOGGING_CONFIG = "config/logging/local.conf"  # Path to file that configures Pyt
 HOST = "0.0.0.0" # the host that is running the app. 0.0.0.0 when running locally 
 PORT = 5000  # What port to expose app on. Must be the same as the port exposed in app/Dockerfile 
 SQLALCHEMY_DATABASE_URI = 'sqlite:///data/tracks.db'  # URI (engine string) for database that contains tracks
-APP_NAME = "penny-lane"
+APP_NAME = "douban-rs"
 SQLALCHEMY_TRACK_MODIFICATIONS = True 
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
 MAX_ROWS_SHOW = 100 # Limits the number of rows returned from the database 
 ```
 
-### 3. Run the Flask app 
+To run the app using Docker, do:
 
-To run the Flask app, run: 
-
-```bash
-python app.py
-```
-
-You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
-
-## Running the app in Docker 
-
-### 1. Build the image 
+1. Build the image 
 
 The Dockerfile for running the flask app is in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
@@ -209,7 +221,7 @@ The Dockerfile for running the flask app is in the `app/` folder. To build the i
 
 This command builds the Docker image, with the tag `msia423`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
  
-### 2. Run the container 
+2. Run the container 
 
 To run the app, run from this directory: 
 
@@ -222,7 +234,9 @@ This command runs the `msia423` image as a container named `test` and forwards t
 
 If `PORT` in `config/flaskconfig.py` is changed, this port should be changed accordingly (as should the `EXPOSE 5000` line in `app/Dockerfile`)
 
-### 3. Kill the container 
+(Note that you should provide necessary environment variables since the app will need to access the RDS tables, otherwise, you'll need to set up your local database ready with movies and predictions ingested, see [Initialize the database](#initialize-the-database))
+
+3. Kill the container 
 
 Once finished with the app, you will need to kill the container. To do so: 
 
@@ -232,25 +246,7 @@ docker kill test
 
 where `test` is the name given in the `docker run` command.
 
-### Example using `python3` as an entry point
-
-We have included another example of a Dockerfile, `app/Dockerfile_python` that has `python3` as the entry point such that when you run the image as a container, the command `python3` is run, followed by the arguments given in the `docker run` command after the image name. 
-
-To build this image: 
-
-```bash
- docker build -f app/Dockerfile_python -t pennylane .
-```
-
-then run the `docker run` command: 
-
-```bash
-docker run -p 5000:5000 --name test pennylane app.py
-```
-
-The new image defines the entry point command as `python3`. Building the sample PennyLane image this way will require initializing the database prior to building the image so that it is copied over, rather than created when the container is run. Therefore, please **do the step [Create the database with a single song](#create-the-database-with-a-single-song) above before building the image**.
-
-# Testing
+## Testing
 
 From within the Docker container, the following command should work to run unit tests when run from the root of the repository: 
 
@@ -261,12 +257,12 @@ python -m pytest
 Using Docker, run the following, if the image has not been built yet:
 
 ```bash
- docker build -f app/Dockerfile_python -t pennylane .
+ docker build -f app/Dockerfile_python -t douban-rs .
 ```
 
 To run the tests, run: 
 
 ```bash
- docker run penny -m pytest
+ docker run douban-rs -m pytest
 ```
  
