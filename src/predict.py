@@ -24,7 +24,7 @@ def predict_matrix(corr, movieID):
 def predict_df(prediction_matrix, movieID, top_n = 10):
     """Transform the predictions to dataframe format."""
 
-    prediction_df = pd.DataFrame(prediction_matrix[:,:(top_n+1)])
+    prediction_df = pd.DataFrame(prediction_matrix[:,:(top_n)])
     prediction_df['targetId'] = movieID
 
     columns = [c+1 for c in prediction_df.columns if c != "targetId"]
