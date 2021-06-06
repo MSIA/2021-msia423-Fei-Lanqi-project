@@ -1,43 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link href="static/basic.css" rel="stylesheet">
-</head>
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Douban Movie Finder</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="static/css/main.css" />
+		<noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
 
-<body>
-    <h3>
-         <a href = "{{ url_for('index') }}">Penny Lane Music Recommender</a>
-    </h3>
+		<!-- Wrapper -->
+			<div id="wrapper" class="fade-in">
 
-    <hr/>
-    <table>
-         <thead>
-            <tr>
-               <th>Title</th>
-               <th>Artist</th>
-               <th>Album</th>
-            </tr>
-         </thead>
+				<!-- Intro -->
+					<div id="intro">
+						
+						<ul class="actions">
+							<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Find Similar Movies You Like!</a></li>
+						</ul>
+						
+					</div>
+					
 
-         <tbody>
-            {% for track in tracks %}
-               <tr>
-                   <td>{{ track.title }}</td>
-                   <td>{{ track.artist }}</td>
-                   <td>{{ track.album }}</td>
-               </tr>
-            {% endfor %}
-         </tbody>
-      </table>
-      <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
-      <dl>
-        <input type=text size=15 name=title placeholder="Title">
-        <input type=text size=15 name=artist placeholder="Artist">
-        <input type=text size=15 name=album placeholder="Album">
-        <input type=submit value=Add>
-      </dl>
-    </form>
+				<!-- Header -->
+					<header id="header">
+						<a href="{{ url_for('index') }}" class="logo">Douban Movie Finder</a>
+					</header>
 
-</body>
+				<!-- Nav -->
+					<nav id="nav">
+						<ul class="links">
+							<li class="active"><a href="index.html">About</a></li>
+							<li><a href="{{ url_for('show_movies') }}">Find Movie!</a></li>
+						</ul>
+						<ul class="icons">
+							<li><a href="https://github.com/MSIA/2021-msia423-Fei-Lanqi-project" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- Featured Post -->
+							<article class="post featured">
+								
+								<p>
+								Douban movie finder is a movie recommender based on <a href="https://www.douban.com/">Douban</a> movies database (the most popular 
+								Chinese movie platform). You can browse through movies you like and find similar movies to your favorite one.
+								</p>
+								
+								<h2>Steps to find similar Movies to the ones you like:</h2>
+								<div class="row">
+									<div class="col-18 col-12-small">
+										<ul>
+											<li>Find a movie you like. You can go to the <a href="https://www.douban.com">Douban</a> platform and find its douban ID, or find a movie 
+												in our database by going directly to the <a href="{{ url_for('show_movies') }}">Find Movie!</a> page.
+											</li>
+											<li>Enter the movies Douban ID, IMDB ID, or the movie's title. Only one is required.</li>
+											<li>Choose how you want to sort the similar movies.</li>
+											<li>Click Find.</li>
+										</ul>
+									</div>
+								
+								<ul class="actions special">
+									<li><a href="{{ url_for('show_movies') }}" class="button primary">Start!</a></li>
+								</ul>
+								<a href="https://www.douban.com/" class="image main"><img src="static/images/douban_page.png" alt="" /></a>
+							</article>
+
+								
+
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="static/js/jquery.min.js"></script>
+			<script src="static/js/jquery.scrollex.min.js"></script>
+			<script src="static/js/jquery.scrolly.min.js"></script>
+			<script src="static/js/browser.min.js"></script>
+			<script src="static/js/breakpoints.min.js"></script>
+			<script src="static/js/util.js"></script>
+			<script src="static/js/main.js"></script>
+
+	</body>
 </html>

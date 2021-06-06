@@ -1,8 +1,9 @@
 import os
-DEBUG = True
+
+DEBUG = False
 LOGGING_CONFIG = "config/logging/local.conf"
 PORT = 5000
-APP_NAME = "penny-lane"
+APP_NAME = "douban-rs"
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 HOST = "0.0.0.0"
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
@@ -16,11 +17,12 @@ DB_PW = os.environ.get('MYSQL_PASSWORD')
 DATABASE = os.environ.get('MYSQL_DATABASE')
 DB_DIALECT = 'mysql+pymysql'
 SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+
 if SQLALCHEMY_DATABASE_URI is not None:
     pass
 elif DB_HOST is None:
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/tracks.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///data/movies.db?charset=utf8mb4'
 else:
-    SQLALCHEMY_DATABASE_URI = '{dialect}://{user}:{pw}@{host}:{port}/{db}'.format(dialect=DB_DIALECT, user=DB_USER,
+    SQLALCHEMY_DATABASE_URI = '{dialect}://{user}:{pw}@{host}:{port}/{db}?charset=utf8mb4'.format(dialect=DB_DIALECT, user=DB_USER,
                                                                                   pw=DB_PW, host=DB_HOST, port=DB_PORT,
                                                                                   db=DATABASE)

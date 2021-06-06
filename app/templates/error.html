@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link href="static/basic.css" rel="stylesheet">
-</head>
+<!DOCTYPE HTML>
+<html>
+  <head>
+      <title>Error Page</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+      <link rel="stylesheet" href="static/css/main.css" />
+      <noscript><link rel="stylesheet" href="static/css/noscript.css" /></noscript>
+  </head>
 
-<body>
-    <h3>
-         <a href = "{{ url_for('index') }}">Penny Lane Music Recommender</a>
-    </h3>
+  <body class="is-preload">
+    <div id="main">
 
-    <div class="alert alert-danger" role="alert">
-  <p class="alert-link">We're sorry. There was a problem accessing the database. Please try back later. </p>
-    </div>
+      <div class="alert alert-danger" role="alert">
+        <p class="alert-link">We're sorry. There was a problem accessing the database. Please try back later. </p>
+      </div>
 
-</body>
+      <h3>
+        <a href = "{{ url_for('index') }}">Return Back to Homepage</a>
+      </h3>
+    </div>   
+  </body>
 </html>
