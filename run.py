@@ -84,8 +84,6 @@ if __name__ == '__main__':
     help="Path to load cleanaed movies data")
     sb_featurize.add_argument("--input_ratings", default="data/outputs/ratings-clean.csv", 
     help="Path to load cleaned ratings data")
-    sb_featurize.add_argument("--output_movies", default="data/outputs/movies-feature.csv", 
-    help="Path to save featurized and merged movies data")
     sb_featurize.add_argument("--output_ratings", default="data/outputs/ratings-feature.csv", 
     help="Path to save featurized ratings data")
 
@@ -166,8 +164,8 @@ if __name__ == '__main__':
             config = yaml.load(f, Loader=yaml.FullLoader)
         movies = pd.read_csv(args.input_movies); ratings = pd.read_csv(args.input_ratings)
         logger.info('Cleaned data loaded from the given paths')
-        movies, ratings = featurize.featurize(movies, ratings, **config['featurize']['featurize'])
-        movies.to_csv(args.output_movies, index=False); ratings.to_csv(args.output_ratings, index=False)
+        movies = featurize.featurize(movies, ratings, **config['featurize']['featurize'])
+        movies.to_csv(args.output_movies, index=False)
         logger.info("Featurized data saved to the given paths")
     elif sp_used == 'train':
         ratings = pd.read_csv(args.input_ratings); logger.info('Featurized data loaded from the given paths')

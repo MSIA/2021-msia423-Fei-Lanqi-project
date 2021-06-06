@@ -1,7 +1,8 @@
 
+import pytest
+import pandas as pd
 
 from src.featurize import get_avg_rating, get_popularity
-import pandas as pd
 
 # TEST FEATURIZE MODULE
 
@@ -36,6 +37,12 @@ def test_get_avg_rating():
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
 
+def test_get_avg_rating_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        get_avg_rating(df_in)
+
 def test_get_popularity():
     # Define input dataframe
     df_in_values = [[0, 0, 5, 1318222486], [0, 1, 4, 1313813583], [0, 2, 5, 1313458035],
@@ -66,3 +73,8 @@ def test_get_popularity():
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
 
+def test_get_popularity_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        get_popularity(df_in)

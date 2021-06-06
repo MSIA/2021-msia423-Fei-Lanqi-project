@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 import numpy as np
 
@@ -17,6 +18,14 @@ def test_predict_aux():
     # Test that the true and test are the same
     np.testing.assert_array_equal(output_test, output_true)
 
+def test_predict_aux_unhappy():
+    # Define input lists
+    distance_list = np.array([1, 0.43, 0.38, 0.59, 0.21, 0.33, 0.12, 0.02])
+    movieID = np.array([1, 2, 3, 5, 6, 8, 14])
+
+    with pytest.raises(IndexError):
+        predict_aux(distance_list, movieID)
+
 def test_predict_matrix():
     # Define inputs
     corr = np.array([[1., 0.63576395, 0.93779311, 0.71055971, -0.42966892],
@@ -34,6 +43,13 @@ def test_predict_matrix():
 
     # Test that the true and test are the same
     np.testing.assert_array_equal(output_test, output_true)
+
+def test_predict_matrix_nonarray():
+    corr = 'I am not a numpy array'
+    movieID = [1, 2, 3, 5, 8]
+
+    with pytest.raises(TypeError):
+        predict_matrix(corr, movieID)
 
 def test_predict_df():
     # Define inputs
@@ -56,4 +72,9 @@ def test_predict_df():
     # Test that the true and test are the same
     np.testing.assert_array_equal(df_test, df_true)
 
+def test_predict_df_nonarray():
+    pred_matrix = 'I am not a numpy array'
+    movieID = [1, 2, 3, 5, 8]
 
+    with pytest.raises(TypeError):
+        predict_df(pred_matrix, movieID, top_n = 3)

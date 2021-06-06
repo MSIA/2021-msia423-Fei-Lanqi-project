@@ -1,8 +1,9 @@
 
-
-from src.train import get_rating_matrix, compute_distance
+import pytest
 import pandas as pd
 import numpy as np
+
+from src.train import get_rating_matrix, compute_distance
 
 # TEST TRAIN MODULE
 
@@ -44,6 +45,12 @@ def test_get_rating_matrix():
 
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
+
+def test_get_rating_matrix_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        get_rating_matrix(df_in)
 
 def test_compute_distance():
     # Define input dataframe
@@ -90,3 +97,8 @@ def test_compute_distance():
     # Test that the true and test are the same
     np.testing.assert_almost_equal(output_test, output_true) # almost equal used because of floating point
 
+def test_compute_distance_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        compute_distance(df_in)

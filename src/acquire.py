@@ -9,7 +9,20 @@ logger = logging.getLogger(__name__)
 
 
 def acquire(s3_path, file_name_movies, file_name_links, file_name_ratings):
-    """Load the raw data from the s3 path and returns the pandas dataframe."""
+    """
+    Load the raw data from the s3 path and returns the pandas dataframe.
+
+    Args:
+        s3_path (str) - s3 path
+        file_name_movies (str) - movies data file name
+        file_name_links (str) - links data file name
+        file_name_ratings (str) - ratings data file name
+
+    Returns:
+        movies (pandas.DataFrame) - movies dataframe
+        links (pandas.DataFrame) - links dataframe
+        ratings (pandas.DataFrame) - ratings dataframe
+    """
 
     try:
         movies = pd.read_csv(s3_path+file_name_movies)

@@ -7,14 +7,45 @@ logger = logging.getLogger(__name__)
 
 
 def merge_data(movies, links):
-    """Match movie titles with external ids like imdbId and doubanId."""
+    """
+    Match movie titles with external ids like imdbId and doubanId.
+
+    Args:
+        movies (pandas.DataFrame) - movies dataframe
+        links (pandas.DataFrame) - links dataframe
+
+    Returns:
+        movies_merged (pandas.DataFrame) - the merged movies dataframe
+    """
+
+    if not isinstance(movies, pd.DataFrame):
+        logger.error("Provided argument `movies` is not a Panda's DataFrame object")
+        raise TypeError("Provided argument `movies` is not a Panda's DataFrame object")
+
+    if not isinstance(links, pd.DataFrame):
+        logger.error("Provided argument `links` is not a Panda's DataFrame object")
+        raise TypeError("Provided argument `links` is not a Panda's DataFrame object")
 
     movies_merged = links.merge(movies, left_on="movieId", right_on="movieId")
 
     return movies_merged
 
 def filter(ratings, user_min=50, movie_min=50):
-    """Drop users and movies with few ratings."""
+    """
+    Drop users and movies with few ratings.
+
+    Args:
+        ratings (pandas.DataFrame) - ratings dataframe
+        user_min (int) - the minimum number of ratings a user needs to have
+        movie_min (int) - the minimum number of ratings a movie needs to have
+
+    Returns:
+        ratings (pandas.DataFrame) - the filtered ratings dataframe
+    """
+
+    if not isinstance(ratings, pd.DataFrame):
+        logger.error("Provided argument `ratings` is not a Panda's DataFrame object")
+        raise TypeError("Provided argument `ratings` is not a Panda's DataFrame object")
 
     # filter out users with less than user_min ratings
     user_rating_count = ratings['userId'].value_counts()

@@ -1,12 +1,13 @@
 
-
-from src.clean import merge_data, filter
+import pytest
 import pandas as pd
 import numpy as np
 
+from src.clean import merge_data, filter
+
 # TEST CLEAN MODULE
 
-def test_merge(): 
+def test_merge_data(): 
     # Define input dataframe
     df_in_movies = [[0, np.nan], [1, 'Harry Potter and the Deathly Hallows: Part II'],
        [2, 'Oceans'], [3, np.nan], [4, 'Transformers 3：Amphimixis At The End Of  The World']]
@@ -40,6 +41,12 @@ def test_merge():
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
 
+def test_merge_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        merge_data(df_in, df_in)
+
 def test_filter():
     # Define input dataframe
     df_in_values = [[0, 0, 5, 1318222486], [0, 1, 4, 1313813583], [0, 2, 5, 1313458035],
@@ -72,3 +79,8 @@ def test_filter():
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
 
+def test_filter_nondf():
+    df_in = 'I am not a dataframe'
+
+    with pytest.raises(TypeError):
+        merge_data(df_in, user_min=5, movie_min=1)
