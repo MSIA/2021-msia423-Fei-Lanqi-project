@@ -1,8 +1,11 @@
 import argparse
-
 import logging.config
 logging.config.fileConfig('config/logging/local.conf')
 logger = logging.getLogger('douban-rs-pipeline')
+
+import yaml
+import pandas as pd
+import numpy as np
 
 from src.add_movie import MovieManager, create_db
 from src.data_acquisition import upload_file_to_s3
@@ -13,10 +16,6 @@ import src.train as train
 import src.predict as predict
 import src.evaluate as evaluate
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
-
-import yaml
-import pandas as pd
-import numpy as np
 
 if __name__ == '__main__':
 
