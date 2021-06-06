@@ -1,5 +1,6 @@
 import traceback
 import logging.config
+
 from flask import Flask
 from flask import render_template, request, redirect
 from sqlalchemy import desc
@@ -22,14 +23,13 @@ movie_manager = MovieManager(app)
 
 @app.route('/')
 def index():
-    """Main view that lists movies in the database.
+    """About page of the app.
 
-    Create view into index page that uses data queried from Movie database and
-    inserts it into the msiapp/templates/index.html template.
+    Create view into index page that contains about info and 
+    instructions of the app using app/templates/index.html template.
 
     Returns: rendered html template
     """
-
 
     return render_template('index.html')
 
@@ -40,7 +40,7 @@ def show_movies():
     """Main view that lists movies in the database.
 
     Create view into index page that uses data queried from Movie database and
-    inserts it into the msiapp/templates/index.html template.
+    inserts it into the msiapp/templates/find.html template.
 
     Returns: rendered html template
     """
@@ -60,29 +60,30 @@ def show_movies():
 def find_movies():
     """Find similar movies given a POST with a movie input
 
-    :return: redirect to output page
+    Returns: redirect to find page
     """
 
     try:
     
         if request.method == "POST":
-            doubanId = request.form['doubanId']; imdbId = request.form['imdbId']; title = request.form['title']
+            doubanId = request.form['doubanId']; imdbId = request.form['imdbId']
+            title = request.form['title']
             order = request.form['order']
-
-
 
         # get movieId of requested movie
         if doubanId != '':
-            doubanId = parse_to_int(doubanId)
+            # note that a javascript is already in placeto prevent non-integer input values
+            doubanId = int(doubanId)
             query = "SELECT * FROM movies WHERE doubanId = {}".format(doubanId)
         elif imdbId != '':
-            imdbId = parse_to_int(imdbId)
+            imdbId = int(imdbId)
             query = "SELECT * FROM movies WHERE imdbId = {}".format(imdbId)
         else:
             query = "SELECT * FROM movies WHERE title = '{}'".format(title)
 
         movie_requested = movie_manager.session.execute(query).first()
 
+        # return movie not found page if the movie is not in the database
         if movie_requested == None: 
             logger.warning("The movie was not found, error page returned")
             return render_template('notfound.html')
@@ -100,28 +101,17 @@ def find_movies():
         elif order == "rating": # rank by rating
             similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).\
             order_by(desc(Movies.rating)).all()
-        else: # rank by similarity
+        else: # default rank by similarity
             similar_movies = movie_manager.session.query(Movies).filter(Movies.movieId.in_(similar_movies)).all()
             similar_movies = sorted(similar_movies, key=lambda o: similar_movies_list.index(o.movieId))
 
-        logger.debug("Output page accessed")
+        logger.debug("Find page accessed")
 
-        return render_template('find.html', movies=similar_movies) # output.html
+        return render_template('find.html', movies=similar_movies) 
     except:
         traceback.print_exc()
         logger.warning("Not able to display movies, error page returned")
         return render_template('error.html')
-
-def parse_to_int(string):
-    """Auxilliary function to help parse string input to integer."""
-
-    try:
-        string_int = int(string)
-        return string_int
-    except ValueError:
-        logger.error('A non-integer value was entered in web input')
-    
-    
 
 
 @app.route('/douban/')

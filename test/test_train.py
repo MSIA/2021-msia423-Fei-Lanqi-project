@@ -88,5 +88,5 @@ def test_compute_distance():
     output_test = compute_distance(df_in)
 
     # Test that the true and test are the same
-    np.testing.assert_array_equal(output_test, output_true)
+    np.testing.assert_almost_equal(output_test, output_true) # almost equal used because of floating point
 

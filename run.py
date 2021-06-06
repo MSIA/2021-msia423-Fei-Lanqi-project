@@ -93,35 +93,35 @@ if __name__ == '__main__':
     sb_train = subparsers.add_parser("train", description="Training model")
     sb_train.add_argument("--input_ratings", default="data/outputs/ratings-clean.csv", 
     help="Path to load cleaned ratings data")
-    sb_train.add_argument("--output_ratings_pivot", default="data/outputs/ratings-pivot-train.csv", 
+    sb_train.add_argument("--output_ratings_pivot", default="model/ratings-pivot-train.csv", 
     help="Path to ratings matrix")
-    sb_train.add_argument("--output_movie_id", default="data/outputs/movieID-train.npy", 
+    sb_train.add_argument("--output_movie_id", default="model/movieID-train.npy", 
     help="Path to save movie IDs array")
-    sb_train.add_argument("--output_user_id", default="data/outputs/userID-train.npy", 
+    sb_train.add_argument("--output_user_id", default="model/userID-train.npy", 
     help="Path to save user IDs array")
-    sb_train.add_argument("--output_corr", default="data/outputs/corr-train.npy", 
+    sb_train.add_argument("--output_corr", default="model/corr-train.npy", 
     help="Path to save trained distance matrix")
 
     # Sub-parser for generating predictions
     sb_predict = subparsers.add_parser("predict", description="Generate predictions")
     sb_predict.add_argument("--config", default="config/modelconfig.yaml", 
     help="Model configuration file")
-    sb_predict.add_argument("--input_movie_id", default="data/outputs/movieID-train.npy", 
+    sb_predict.add_argument("--input_movie_id", default="model/movieID-train.npy", 
     help="Path to load movieID array")
-    sb_predict.add_argument("--input_corr", default="data/outputs/corr-train.npy", 
+    sb_predict.add_argument("--input_corr", default="model/corr-train.npy", 
     help="Path to load distance matrix")
-    sb_predict.add_argument("--output_predictions", default="data/outputs/predictions-predict.csv", 
+    sb_predict.add_argument("--output_predictions", default="model/predictions-predict.csv", 
     help="Path to save predictions")
 
     # Sub-parser for evaluating model
     sb_evaluate = subparsers.add_parser("evaluate", description="Evaluate model performance")
-    sb_evaluate.add_argument("--input_ratings_pivot", default="data/outputs/ratings-pivot-train.csv", 
+    sb_evaluate.add_argument("--input_ratings_pivot", default="model/ratings-pivot-train.csv", 
     help="Path to load ratings matrix")
-    sb_evaluate.add_argument("--input_user_id", default="data/outputs/userID-train.npy", 
+    sb_evaluate.add_argument("--input_user_id", default="model/userID-train.npy", 
     help="Path to load userID array")
-    sb_evaluate.add_argument("--input_movie_id", default="data/outputs/movieID-train.npy", 
+    sb_evaluate.add_argument("--input_movie_id", default="model/movieID-train.npy", 
     help="Path to load movieID array")
-    sb_evaluate.add_argument("--input_corr", default="data/outputs/corr-train.npy", 
+    sb_evaluate.add_argument("--input_corr", default="model/corr-train.npy", 
     help="Path to load distance matrix")
     sb_evaluate.add_argument("--output", default="data/outputs/score-evaluate.txt", 
     help="Path to save the satisfaction score")

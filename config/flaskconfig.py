@@ -1,5 +1,6 @@
 import os
-DEBUG = True
+
+DEBUG = False
 LOGGING_CONFIG = "config/logging/local.conf"
 PORT = 5000
 APP_NAME = "douban-rs"
@@ -16,6 +17,7 @@ DB_PW = os.environ.get('MYSQL_PASSWORD')
 DATABASE = os.environ.get('MYSQL_DATABASE')
 DB_DIALECT = 'mysql+pymysql'
 SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
+
 if SQLALCHEMY_DATABASE_URI is not None:
     pass
 elif DB_HOST is None:

@@ -6,7 +6,7 @@ import numpy as np
 
 # TEST CLEAN MODULE
 
-def test_merge(): #### to be changed ####
+def test_merge(): 
     # Define input dataframe
     df_in_movies = [[0, np.nan], [1, 'Harry Potter and the Deathly Hallows: Part II'],
        [2, 'Oceans'], [3, np.nan], [4, 'Transformers 3：Amphimixis At The End Of  The World']]
@@ -62,7 +62,7 @@ def test_filter():
         [0, 3, 5, 1313327802], [0, 5, 4, 1307669511], [0, 6, 4, 1305861115],
         [2, 9, 3, 1294547778], [2, 10, 5, 1294547757], [2, 11, 4, 1292159777], 
         [2, 12, 4, 1289795908], [2, 13, 2, 1289795776]],
-        index=[*range(13)],
+        index=[0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12],
         columns=df_in_columns)
 
     # Compute test output

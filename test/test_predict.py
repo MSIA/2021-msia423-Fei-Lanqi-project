@@ -5,11 +5,11 @@ from src.predict import predict_aux, predict_matrix, predict_df
 
 def test_predict_aux():
     # Define input lists
-    distance_list = [1, 0.43, 0.38, 0.59, 0.21, 0.33, 0.12, 0.02]
-    movieID = [1, 2, 3, 5, 6, 8, 14, 15]
+    distance_list = np.array([1, 0.43, 0.38, 0.59, 0.21, 0.33, 0.12, 0.02])
+    movieID = np.array([1, 2, 3, 5, 6, 8, 14, 15])
 
     # Define true output
-    output_true = [1, 5, 2, 3, 8, 6, 14, 15]
+    output_true = np.array([5, 2, 3, 8, 6, 14, 15])
 
     # Compute test result
     output_test = predict_aux(distance_list, movieID)

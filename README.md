@@ -51,18 +51,24 @@ To measure the business success of this app, standard A/B testing will be used, 
 ```
 ├── README.md                         <- You are here
 ├── api
-│   ├── static/                       <- CSS, JS files that remain static
+│   ├── static/                       <- CSS, JS, SASS, webfonts, image files that remain static
 │   ├── templates/                    <- HTML (or other code) that is templated and changes based on a set of inputs
 │   ├── boot.sh                       <- Start up script for launching app in Docker container.
-│   ├── Dockerfile                    <- Dockerfile for building image to run app  
+│   ├── run-pipeline.sh               <- Start up script for running model pipeline.
+│   ├── run-tests.sh                  <- Start up script for running tests.
+│   ├── Dockerfile                    <- Dockerfile for building image to run app 
+│   ├── Dockerfile_python             <- Dockerfile for building image with python entrypoint
+│   ├── Dockerfile_pipeline           <- Dockerfile for model pipeline.
 │
 ├── config                            <- Directory for configuration files 
 │   ├── local/                        <- Directory for keeping environment variables and other local configurations that *do not sync** to Github 
 │   ├── logging/                      <- Configuration of python loggers
 │   ├── flaskconfig.py                <- Configurations for Flask API 
+│   ├── modelconfig.yaml              <- Configurations for model pipeline
 │
 ├── data                              <- Folder that contains data used or generated. Only the external/ and sample/ subdirectories are tracked by git. 
 │   ├── external/                     <- External data sources, usually reference data,  will be synced with git
+│   ├── outputs/                      <- Model pipline outputs folder that *do not sync** to Github 
 │   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
 │
 ├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder 
@@ -77,9 +83,8 @@ To measure the business success of this app, standard A/B testing will be used, 
 │   ├── archive/                      <- Develop notebooks no longer being used.
 │   ├── deliver/                      <- Notebooks shared with others / in final state
 │   ├── develop/                      <- Current notebooks being used in development.
-│   ├── template.ipynb                <- Template notebook for analysis with useful imports, helper functions, and SQLAlchemy setup. 
 │
-├── reference/                        <- Any reference material relevant to the project
+├── references/                        <- Any reference material relevant to the project
 │
 ├── src/                              <- Source data for the project 
 │
@@ -202,7 +207,7 @@ DEBUG = True  # Keep True for debugging, change to False when moving to producti
 LOGGING_CONFIG = "config/logging/local.conf"  # Path to file that configures Python logger
 HOST = "0.0.0.0" # the host that is running the app. 0.0.0.0 when running locally 
 PORT = 5000  # What port to expose app on. Must be the same as the port exposed in app/Dockerfile 
-SQLALCHEMY_DATABASE_URI = 'sqlite:///data/tracks.db'  # URI (engine string) for database that contains tracks
+SQLALCHEMY_DATABASE_URI = 'sqlite:///data/movies.db'  # URI (engine string) for database that contains tracks
 APP_NAME = "douban-rs"
 SQLALCHEMY_TRACK_MODIFICATIONS = True 
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
