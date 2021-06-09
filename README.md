@@ -117,7 +117,7 @@ The original dataset is found [here](https://github.com/SophonPlus/ChineseNlpCor
 To upload the raw datasets into the S3 bucket, run:
 
 ```bash
-python run.py upload --local_path=<local_path> --s3_path=<s3_path> upload --data_file=<data_file>
+python run.py upload --local_path=<local_path> --s3_path=<s3_path> --data_file=<data_file>
 ```
 
 By default, `python run.py upload` uploads `movies.csv` from `data/sample/` in this repo to `s3://2021-msia423-fei-lanqi/raw/`. To test the script, make sure to specify the argument `--s3_path` and change it to your S3 path. 
@@ -149,6 +149,12 @@ To create the database using Docker, use the same image in the previous section:
 
 ```bash
 docker run -it -e SQLALCHEMY_DATABASE_URI msia423 run.py create_db
+```
+
+Note that you have to mount the local data folder if you are creating a local database:
+
+```bash
+docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ -e SQLALCHEMY_DATABASE_URI msia423 run.py create_db
 ```
 
 #### Ingest data to database

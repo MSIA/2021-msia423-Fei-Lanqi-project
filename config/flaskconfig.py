@@ -1,6 +1,6 @@
 import os
 
-DEBUG = True
+DEBUG = False
 LOGGING_CONFIG = "config/logging/local.conf"
 PORT = 5000
 APP_NAME = "douban-rs"
