@@ -1,12 +1,11 @@
+"""Test featurize module"""
 
 import pytest
 import pandas as pd
 
 from src.featurize import get_avg_rating, get_popularity
 
-# TEST FEATURIZE MODULE
-
-def test_get_avg_rating(): 
+def test_get_avg_rating():
     # Define input dataframe
     df_in_values = [[0, 0, 5, 1318222486], [0, 1, 4, 1313813583], [0, 2, 5, 1313458035],
                  [0, 3, 5, 1313327802], [0, 5, 4, 1307669511], [0, 6, 4, 1305861115],
@@ -15,7 +14,7 @@ def test_get_avg_rating():
                  [2, 13, 2, 1289795776], [3, 14, 5, 1288455663], [3, 15, 4, 1287644898],
                  [3, 16, 4, 1287644833], [3, 17, 2, 1287644790], [4, 18, 2, 1287644735],
                  [4, 19, 5, 1284393419], [5, 4, 3, 1312126734]]
-    
+
     df_in_index = [*range(20)]
 
     df_in_columns = ['userId', 'movieId', 'rating', 'timestamp']
@@ -52,7 +51,7 @@ def test_get_popularity():
                  [2, 6, 2, 1289795776], [3, 5, 5, 1288455663], [3, 6, 4, 1287644898],
                  [3, 11, 4, 1287644833], [3, 17, 2, 1287644790], [4, 2, 2, 1287644735],
                  [4, 5, 5, 1284393419], [5, 4, 3, 1312126734]]
-    
+
     df_in_index = [*range(20)]
 
     df_in_columns = ['userId', 'movieId', 'rating', 'timestamp']

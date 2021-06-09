@@ -1,6 +1,7 @@
-import logging 
+"""Data cleaning."""
 
-import numpy as np
+import logging
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,6 @@ def merge_data(movies, links):
     Returns:
         movies_merged (pandas.DataFrame) - the merged movies dataframe
     """
-
     if not isinstance(movies, pd.DataFrame):
         logger.error("Provided argument `movies` is not a Panda's DataFrame object")
         raise TypeError("Provided argument `movies` is not a Panda's DataFrame object")
@@ -26,11 +26,12 @@ def merge_data(movies, links):
         logger.error("Provided argument `links` is not a Panda's DataFrame object")
         raise TypeError("Provided argument `links` is not a Panda's DataFrame object")
 
+    # add imdb ids to the movies table
     movies_merged = links.merge(movies, left_on="movieId", right_on="movieId")
 
     return movies_merged
 
-def filter(ratings, user_min=50, movie_min=50):
+def filter_rating(ratings, user_min=50, movie_min=50):
     """
     Drop users and movies with few ratings.
 
@@ -42,7 +43,6 @@ def filter(ratings, user_min=50, movie_min=50):
     Returns:
         ratings (pandas.DataFrame) - the filtered ratings dataframe
     """
-
     if not isinstance(ratings, pd.DataFrame):
         logger.error("Provided argument `ratings` is not a Panda's DataFrame object")
         raise TypeError("Provided argument `ratings` is not a Panda's DataFrame object")
@@ -55,7 +55,8 @@ def filter(ratings, user_min=50, movie_min=50):
 
     # filter out movies with less than movie_min ratings
     movie_rating_count = ratings['movieId'].value_counts()
-    ratings = ratings[ratings['movieId'].isin(movie_rating_count[movie_rating_count>=movie_min].index)]
+    ratings = ratings[ratings['movieId'].\
+                isin(movie_rating_count[movie_rating_count>=movie_min].index)]
 
     logger.info('Ratings of movies with less than %d ratings are dropped', movie_min)
 
@@ -63,8 +64,7 @@ def filter(ratings, user_min=50, movie_min=50):
 
 def clean(movies, links, ratings, config):
     """Perform all data cleaning and returns the cleaned dataframes."""
-
     movies = merge_data(movies, links)
-    ratings = filter(ratings, **config['filter'])
+    ratings = filter_rating(ratings, **config['filter'])
 
     return movies, ratings

@@ -16,4 +16,4 @@ RUN chmod +x app/boot.sh
 
 EXPOSE 5000
 
-CMD ["./app/boot.sh"]
+CMD ["./app/run-app-rds.sh"]
