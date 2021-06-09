@@ -96,36 +96,44 @@ To measure the business success of this app, standard A/B testing will be used, 
 ```
 
 ## Running the app
-### 1. Initialize the database 
-#### Acquire the datasets
-The original dataset is found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb). Click the first link directs to the [download site](https://pan.baidu.com/s/1DkN1LmdSMzm_jCBKhbPbig) at Baidu Netdisk. Then it could be downloaded by clicking the download button (the second button near on the top right corner, which is next to the blue button). However, it requires one to have Baidu Netdisk installed and a Baidu account. To facilitate downloading, the raw datasets have already been included in this repo under `data/sample/`. They could also be downloaded via the `src/data_acquisition.py` described below.
+### 0. Environment Variables
+Below are the list of environment variables that are used for this project:
+- AWS Credentials
+  + AWS_ACCESS_KEY_ID
+  + AWS_SECRET_ACCESS_KEY
+- Database Connection
+  + SQLALCHEMY_DATABASE_URI *engine string of database*
+- Database Connection (alternative)
+  + MYSQL_HOST *database host*
+  + MYSQL_PORT *database port*
+  + MYSQL_USER *database user*
+  + MYSQL_PASSWORD *database password*
+  + MYSQL_DATABASE *database name*
 
-To download the raw datasets and write them into the S3 bucket, run:
+### 1. Initialize the database 
+#### Acquire the datasets and Upload to S3
+The original dataset is found [here](https://github.com/SophonPlus/ChineseNlpCorpus/blob/master/datasets/ez_douban/intro.ipynb). Click the first link directs to the [download site](https://pan.baidu.com/s/1DkN1LmdSMzm_jCBKhbPbig) at Baidu Netdisk. Then it could be downloaded by clicking the download button (the second button near on the top right corner, which is next to the blue button). However, it requires one to have Baidu Netdisk installed and a Baidu account. To facilitate downloading, the raw datasets have already been included in this repo under `data/sample/`. 
+
+To upload the raw datasets into the S3 bucket, run:
 
 ```bash
-python src/data_acquisition.py --local_path=<local_path> --s3_path=<s3_path> download_upload
+python run.py upload --local_path=<local_path> --s3_path=<s3_path> --data_file=<data_file>
 ```
 
-By default, `python src/data_acquisition.py download_upload` downloads the three raw datasets from `data/sample/` in this repo to local path `data/sample/` and uploads them to `s3://2021-msia423-fei-lanqi/raw/`. To test the script, make sure to specify the argument `--s3_path` and change it to your S3 path. Also note that the arguments have to be provided before the subparser `ownload_upload`. One could also use the subparser `download` or `upload` to only download the datasets from source or only upload the datasets to S3.
+By default, `python run.py upload` uploads `movies.csv` from `data/sample/` in this repo to `s3://2021-msia423-fei-lanqi/raw/`. To test the script, make sure to specify the argument `--s3_path` and change it to your S3 path. 
+
+There are three data files used in this project, and so  `data_file` should be chosen from `movies.csv`, `links.csv` and `ratings.csv`
 
 To write the datasets into S3 bucket in Docker:
 
-Note that since we are building the image from inside the repo, where the raw datasets already exist, there is no need to download the datasets again.
-
 - build a docker image:
 
-Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
+At the root of the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
 
 - run the script:
 
 ```bash
-docker run -it --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY msia423 src/data_acquisition.py --s3_path=<s3_path> upload
-```
-
-- check the data is uploaded to s3:
-
-```bash
-aws s3 ls <s3_path>
+docker run -it -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 run.py upload --local_path=<local_path> --s3_path=<s3_path> upload --data_file=<data_file>
 ```
 
 #### Create the database 
@@ -137,21 +145,19 @@ python run.py create_db --engine_string=<engine_string>
 
 By default, `python run.py create_db` creates a database at `sqlite:///data/movies.db` if MYSQL_HOST is not given.
 
-To create the database using Docker, run:
-- build a docker image:
-
-Inside the repository, run `docker build -f app/Dockerfile_python -t msia423 .`
-
-- create the database in the RDS for this project:
+To create the database using Docker, use the same image in the previous section:
 
 ```bash
-docker run -it --env MYSQL_HOST --env MYSQL_PORT --env MYSQL_USER --env MYSQL_PASSWORD --env MYSQL_DATABASE msia423 run.py create_db
+docker run -it -e SQLALCHEMY_DATABASE_URI msia423 run.py create_db
 ```
 
-To only access and look into the database:
-`docker run -it --rm mysql:5.7.33 mysql -h${MYSQL_HOST} -u${MYSQL_USER} -p${MYSQL_PASSWORD}`, then you can run `SHOW DATABASES;` -> `USE msia423;` -> `SHOW TABLES;`->`DESCRIBE movies;` to check the schema.
+Note that you have to mount the local data folder if you are creating a local database:
 
-#### Adding movies 
+```bash
+docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ -e SQLALCHEMY_DATABASE_URI msia423 run.py create_db
+```
+
+#### Ingest data to database
 To add data to movies table from a csv file to the database:
 
 ```bash
@@ -166,9 +172,9 @@ Similarly, to add predictions from a csv to the databse:
 python run.py ingest_to_predictions --engine_string=<engine_string> --file_path=<file_path>
 ```
 
-The predictions csv file should be the one generated from model pipeline, which will by default lie under `data/outputs/predictions-predict.csv`. Note that by default only 10 similar movies are predicted for each movie, due to memory limit. This can be expanded but the schema of the database need to be modified.
+The predictions csv file should be the one generated from model pipeline, which will by default lie under `models/predictions-predict.csv`. Note that by default only 10 similar movies are predicted for each movie, due to memory limit. This can be expanded but the schema of the database need to be modified.
 
-To get movies and predictions data, please **do the step [Model Pipeline](#model-pipeline]) below before building ingesting data**.
+To get movies and predictions data, please **do the step [Model Pipeline](#model-pipeline]) below before ingesting data**.
 
 ### 2. Model Pipeline
 
@@ -181,11 +187,11 @@ To run the model pipeline (acquire, clean, featurize, train, predict and evaluat
 To run it in Docker, do:
 
 ```bash
-docker build -f app/Dockerfile_pipeline -t douban-pipeline . 
+docker build -f app/Dockerfile_sh -t msia423 . 
 ```
 
 ```bash
-docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ douban-pipeline --env AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY app/run-pipeline.sh
+docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 app/run-model-pipeline.sh
 ```
 
 ### 4. Run the Flask app 
@@ -198,50 +204,37 @@ python app.py
 
 You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
 
-#### Configure Flask app 
-
-`config/flaskconfig.py` holds the configurations for the Flask app. It includes the following configurations:
-
-```python
-DEBUG = True  # Keep True for debugging, change to False when moving to production 
-LOGGING_CONFIG = "config/logging/local.conf"  # Path to file that configures Python logger
-HOST = "0.0.0.0" # the host that is running the app. 0.0.0.0 when running locally 
-PORT = 5000  # What port to expose app on. Must be the same as the port exposed in app/Dockerfile 
-SQLALCHEMY_DATABASE_URI = 'sqlite:///data/movies.db'  # URI (engine string) for database that contains tracks
-APP_NAME = "douban-rs"
-SQLALCHEMY_TRACK_MODIFICATIONS = True 
-SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
-MAX_ROWS_SHOW = 100 # Limits the number of rows returned from the database 
-```
-
 To run the app using Docker, do:
 
-1. Build the image 
+1. RDS or Local Database Ready
 
-The Dockerfile for running the flask app is in the `app/` folder. To build the image, run from this directory (the root of the repo): 
+If you already have sqlite database with data ingested, or you want to use the RDS database, do:
 
 ```bash
  docker build -f app/Dockerfile -t msia423 .
 ```
 
-This command builds the Docker image, with the tag `msia423`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
- 
-2. Run the container 
-
-To run the app, run from this directory: 
-
 ```bash
-docker run -p 5000:5000 --name test msia423
+docker run -e SQLALCHEMY_DATABASE_URI -p 5000:5000 --name test msia423
 ```
+
 You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
 
-This command runs the `msia423` image as a container named `test` and forwards the port 5000 from container to your laptop so that you can access the flask app exposed through that port. 
+2. No Database Ready
 
-If `PORT` in `config/flaskconfig.py` is changed, this port should be changed accordingly (as should the `EXPOSE 5000` line in `app/Dockerfile`)
+If you don't have a database ready, but have the movies and predictions data ready to ingest to a local database, do:
 
-(Note that you should provide necessary environment variables since the app will need to access the RDS tables, otherwise, you'll need to set up your local database ready with movies and predictions ingested, see [Initialize the database](#initialize-the-database))
+```bash
+ docker build -f app/Dockerfile_sh -t msia423 .
+```
 
-3. Kill the container 
+```bash
+docker run -p 5000:5000 --name test msia423 app/run-app-pipeline.sh
+```
+ 
+If you do not have the data ready either, please **do the step [Model Pipeline](#model-pipeline]) below before ingesting data**.
+
+#### Kill the container 
 
 Once finished with the app, you will need to kill the container. To do so: 
 
@@ -256,18 +249,18 @@ where `test` is the name given in the `docker run` command.
 From within the Docker container, the following command should work to run unit tests when run from the root of the repository: 
 
 ```bash
-python -m pytest
+pytest
 ``` 
 
 Using Docker, run the following, if the image has not been built yet:
 
 ```bash
- docker build -f app/Dockerfile_python -t douban-rs .
+ docker build -f app/Dockerfile_python -t msia423 .
 ```
 
 To run the tests, run: 
 
 ```bash
- docker run douban-rs -m pytest
+ docker run msia423 -m pytest
 ```
  

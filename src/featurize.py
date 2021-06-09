@@ -1,6 +1,7 @@
-import logging 
+"""Feature engineering."""
 
-import numpy as np
+import logging
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -17,12 +18,11 @@ def get_avg_rating(ratings):
     Returns:
         avg_ratings (pandas.DataFrame) - the aggregated ratings dataframe
     """
-
     if not isinstance(ratings, pd.DataFrame):
         logger.error("Provided argument `ratings` is not a Panda's DataFrame object")
         raise TypeError("Provided argument `ratings` is not a Panda's DataFrame object")
 
-    avg_ratings = pd.DataFrame(ratings.groupby('movieId')['rating'].mean())
+    avg_ratings = pd.DataFrame(ratings.groupby('movieId')['rating'].mean()) # aggregate by user
 
     return avg_ratings
 
@@ -36,7 +36,6 @@ def get_popularity(ratings):
     Returns:
         popularity (pandas.DataFrame) - the popularity dataframe
     """
-    
     if not isinstance(ratings, pd.DataFrame):
         logger.error("Provided argument `ratings` is not a Panda's DataFrame object")
         raise TypeError("Provided argument `ratings` is not a Panda's DataFrame object")
@@ -58,12 +57,14 @@ def featurize(movies, ratings, feature_names):
     Returns:
         ratings (pandas.DataFrame) - featurized ratings dataframe
     """
-
     agg_ratings = get_avg_rating(ratings)
+    # rename column if a user gives a different one than default
     agg_ratings.rename(columns={'rating':feature_names[0]}, inplace=True)
     agg_ratings[feature_names[1]] = get_popularity(ratings)
+    logger.info("Feature %s is generated", feature_names[0])
 
     movies = agg_ratings.merge(movies, left_index=True, right_on="movieId")
     movies = movies[['movieId','doubanId','imdbId','title']+feature_names]
+    logger.info("Feature %s is generated", feature_names[1])
 
     return movies

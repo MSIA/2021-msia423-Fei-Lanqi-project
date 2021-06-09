@@ -1,13 +1,13 @@
 
+"""Test clean module"""
+
 import pytest
 import pandas as pd
 import numpy as np
 
-from src.clean import merge_data, filter
+from src.clean import merge_data, filter_rating
 
-# TEST CLEAN MODULE
-
-def test_merge_data(): 
+def test_merge_data():
     # Define input dataframe
     df_in_movies = [[0, np.nan], [1, 'Harry Potter and the Deathly Hallows: Part II'],
        [2, 'Oceans'], [3, np.nan], [4, 'Transformers 3：Amphimixis At The End Of  The World']]
@@ -47,7 +47,7 @@ def test_merge_nondf():
     with pytest.raises(TypeError):
         merge_data(df_in, df_in)
 
-def test_filter():
+def test_filter_rating():
     # Define input dataframe
     df_in_values = [[0, 0, 5, 1318222486], [0, 1, 4, 1313813583], [0, 2, 5, 1313458035],
                  [0, 3, 5, 1313327802], [0, 5, 4, 1307669511], [0, 6, 4, 1305861115],
@@ -56,7 +56,7 @@ def test_filter():
                  [2, 13, 2, 1289795776], [3, 14, 5, 1288455663], [3, 15, 4, 1287644898],
                  [3, 16, 4, 1287644833], [3, 17, 2, 1287644790], [4, 18, 2, 1287644735],
                  [4, 19, 5, 1284393419], [5, 4, 3, 1312126734]]
-    
+
     df_in_index = [*range(20)]
 
     df_in_columns = ['userId', 'movieId', 'rating', 'timestamp']
@@ -67,14 +67,14 @@ def test_filter():
     df_true = pd.DataFrame(
         [[0, 0, 5, 1318222486], [0, 1, 4, 1313813583], [0, 2, 5, 1313458035],
         [0, 3, 5, 1313327802], [0, 5, 4, 1307669511], [0, 6, 4, 1305861115],
-        [2, 9, 3, 1294547778], [2, 10, 5, 1294547757], [2, 11, 4, 1292159777], 
+        [2, 9, 3, 1294547778], [2, 10, 5, 1294547757], [2, 11, 4, 1292159777],
         [2, 12, 4, 1289795908], [2, 13, 2, 1289795776]],
         index=[0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12],
         columns=df_in_columns)
 
     # Compute test output
 
-    df_test = filter(df_in, user_min=5, movie_min=1)
+    df_test = filter_rating(df_in, user_min=5, movie_min=1)
 
     # Test that the true and test are the same
     pd._testing.assert_frame_equal(df_true, df_test)
@@ -83,4 +83,4 @@ def test_filter_nondf():
     df_in = 'I am not a dataframe'
 
     with pytest.raises(TypeError):
-        merge_data(df_in, user_min=5, movie_min=1)
+        merge_data(df_in, df_in)
