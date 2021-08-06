@@ -1,7 +1,8 @@
 # Douban Movie Smart Finder
-Project creator and Developer: Lanqi Fei
 
-(QA contributions: Zixiao Huang)
+<p align="center">
+  <img src="https://github.com/flanqi/douban-recommendation-app/blob/main/figures/img.gif" />
+</p>
 
 ## Table of Contents
 <!-- toc -->
@@ -11,18 +12,11 @@ Project creator and Developer: Lanqi Fei
   * [3. Success Criteria](#3-success-criteria)
 - [Directory structure](#directory-structure)
 - [Running the app](#running-the-app)
+  * [0. Environment Variables](#0-environment-variables)
   * [1. Initialize the database](#1-initialize-the-database)
-    + [Create the database with a single song](#create-the-database-with-a-single-song)
-    + [Adding additional songs](#adding-additional-songs)
-    + [Defining your engine string](#defining-your-engine-string)
-      - [Local SQLite database](#local-sqlite-database)
-  * [2. Configure Flask app](#2-configure-flask-app)
+  * [2. Model Pipeline](#2-model-pipeline)
   * [3. Run the Flask app](#3-run-the-flask-app)
-- [Running the app in Docker](#running-the-app-in-docker)
-  * [1. Build the image](#1-build-the-image)
-  * [2. Run the container](#2-run-the-container)
-  * [3. Kill the container](#3-kill-the-container)
-  * [Workaround for potential Docker problem for Windows.](#workaround-for-potential-docker-problem-for-windows)
+- [Testing](#testing)
 
 <!-- tocstop -->
 ## Project Charter
@@ -70,14 +64,13 @@ To measure the business success of this app, standard A/B testing will be used, 
 │   ├── external/                     <- External data sources, usually reference data,  will be synced with git
 │   ├── outputs/                      <- Model pipline outputs folder that *do not sync** to Github 
 │   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
+│   movie.db                          <- local sqlite database holding necessary data for app
 │
 ├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder 
 │
 ├── docs/                             <- Sphinx documentation based on Python docstrings. Optional for this project. 
 │
 ├── figures/                          <- Generated graphics and figures to be used in reporting, documentation, etc
-│
-├── models/                           <- Trained model objects (TMOs), model predictions, and/or model summaries
 │
 ├── notebooks/
 │   ├── archive/                      <- Develop notebooks no longer being used.
@@ -194,7 +187,7 @@ docker build -f app/Dockerfile_sh -t msia423 .
 docker run --mount type=bind,source="$(pwd)/data",target=/app/data/ -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 app/run-model-pipeline.sh
 ```
 
-### 4. Run the Flask app 
+### 3. Run the Flask app 
 
 To run the Flask app locally, run: 
 
