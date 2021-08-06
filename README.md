@@ -68,16 +68,12 @@ To measure the business success of this app, standard A/B testing will be used, 
 │
 ├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder 
 │
-├── docs/                             <- Sphinx documentation based on Python docstrings. Optional for this project. 
-│
 ├── figures/                          <- Generated graphics and figures to be used in reporting, documentation, etc
 │
 ├── notebooks/
 │   ├── archive/                      <- Develop notebooks no longer being used.
 │   ├── deliver/                      <- Notebooks shared with others / in final state
 │   ├── develop/                      <- Current notebooks being used in development.
-│
-├── references/                        <- Any reference material relevant to the project
 │
 ├── src/                              <- Source data for the project 
 │
@@ -89,6 +85,14 @@ To measure the business success of this app, standard A/B testing will be used, 
 ```
 
 ## Running the app
+
+Once you have a complete repository copied to your computer and you have installed all the necessary libraries listed in the requirement.txt, you can simply run the following code to access the app:
+```bash
+python app.py
+```
+
+Now the app is ready to access at http://0.0.0.0:5000/ in your web browser. Below are some sections describing the detailed configuration and how the app runs.
+
 ### 0. Environment Variables
 Below are the list of environment variables that are used for this project:
 - AWS Credentials
